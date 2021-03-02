@@ -67,6 +67,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Copy configuration
+        run: |
+          pushd src
+          && cp config.example.yml config.yml
+          && popd
+
       - name: Run unit tests
         run: pnpm test:ci
 
@@ -100,4 +106,4 @@ jobs:
         run: echo "##[add-matcher].github/problem-matchers/tsc.json"
 
       - name: Compile TypeScript
-        run: pnpm build:no-emit
+        run: pnpm build

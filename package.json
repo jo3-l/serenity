@@ -10,7 +10,6 @@
 	"scripts": {
 		"release": "release-it",
 		"build": "pnpm build:src && pnpm build:knexfile && pnpm build:migrations",
-		"build:no-emit": "ttsc -p src --composite false --noEmit && ttsc -p tsconfig.knexfile.json --noEmit && ttsc -p migrations --noEmit",
 		"build:src": "ttsc -b src",
 		"build:knexfile": "ttsc -b tsconfig.knexfile.json",
 		"build:migrations": "ttsc -p migrations",
@@ -146,7 +145,7 @@
 			"before:init": [
 				"pnpm lint",
 				"pnpm test",
-				"pnpm build:no-emit"
+				"pnpm build"
 			]
 		}
 	},
