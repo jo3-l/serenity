@@ -1,0 +1,163 @@
+{
+	"name": "serenity",
+	"version": "0.0.1",
+	"description": "A private general-purpose Discord bot.",
+	"main": "dist/Serenity.js",
+	"directories": {
+		"test": "tests",
+		"lib": "src"
+	},
+	"scripts": {
+		"release": "release-it",
+		"build": "pnpm build:src && pnpm build:knexfile && pnpm build:migrations",
+		"build:no-emit": "ttsc -p src --composite false --noEmit && ttsc -p tsconfig.knexfile.json --noEmit && ttsc -p migrations --noEmit",
+		"build:src": "ttsc -b src",
+		"build:knexfile": "ttsc -b tsconfig.knexfile.json",
+		"build:migrations": "ttsc -p migrations",
+		"start:dev": "ts-node --compiler ttypescript --project src/tsconfig.json src/Serenity | pino-pretty --colorize --translateTime",
+		"start": "node dist/Serenity",
+		"knex:dev": "TS_NODE_COMPILER='ttypescript' && knex --knexfile knexfile.ts",
+		"knex": "knex --knexfile knexfile.js",
+		"test": "TESTING=true jest",
+		"test:watch": "TESTING=true jest --watch",
+		"test:ci": "TESTING=true jest --ci --no-stack-trace --verbose",
+		"lint": "eslint . --ext js,ts",
+		"lint:fix": "eslint . --ext js,ts --fix",
+		"prettier:fix": "prettier --write \"**/*.ts\"",
+		"pretty-quick": "pretty-quick --staged",
+		"lint-staged": "lint-staged"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/jo3-l/serenity.git"
+	},
+	"keywords": [
+		"bot",
+		"discord",
+		"discord-bots",
+		"moderation",
+		"discordjs",
+		"serenity"
+	],
+	"author": "Joe L.",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/jo3-l/serenity/issues"
+	},
+	"homepage": "https://github.com/jo3-l/serenity#readme",
+	"dependencies": {
+		"@js-joda/core": "^3.2.0",
+		"@js-joda/timezone": "^2.5.0",
+		"@skyra/char": "^1.0.1",
+		"colorette": "^1.2.2",
+		"discord.js": "^12.5.1",
+		"js-yaml": "^4.0.0",
+		"knex": "^0.21.18",
+		"myzod": "^1.5.0",
+		"objection": "^2.2.14",
+		"pg": "^8.5.1",
+		"pino": "^6.11.1"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^12.0.1",
+		"@commitlint/config-angular": "^11.0.0",
+		"@j-ulrich/release-it-regex-bumper": "^1.2.1",
+		"@release-it/conventional-changelog": "^2.0.1",
+		"@types/jest": "^26.0.20",
+		"@types/js-yaml": "^4.0.0",
+		"@types/node": "^14.14.31",
+		"@types/pino": "^6.3.6",
+		"@typescript-eslint/eslint-plugin": "^4.15.2",
+		"@typescript-eslint/parser": "^4.15.2",
+		"eslint": "^7.20.0",
+		"eslint-config-marine": "^8.2.0",
+		"eslint-config-prettier": "^7.2.0",
+		"eslint-plugin-import": "^2.22.1",
+		"eslint-plugin-jest": "^24.1.5",
+		"eslint-plugin-optimize-regex": "^1.2.0",
+		"eslint-plugin-prettier": "^3.3.1",
+		"eslint-plugin-simple-import-sort": "^7.0.0",
+		"eslint-plugin-tsdoc": "^0.2.11",
+		"husky": "5.1.3",
+		"jest": "^26.6.3",
+		"jest-circus": "^26.6.3",
+		"lint-staged": "^10.5.4",
+		"pino-pretty": "^4.5.0",
+		"prettier": "^2.2.1",
+		"pretty-quick": "^3.1.0",
+		"release-it": "^14.4.1",
+		"ts-jest": "^26.5.2",
+		"ts-node": "^9.1.1",
+		"ttypescript": "^1.5.12",
+		"typescript": "^4.2.2",
+		"typescript-transform-paths": "^2.2.3"
+	},
+	"commitlint": {
+		"extends": [
+			"@commitlint/config-angular"
+		],
+		"rules": {
+			"scope-case": [
+				2,
+				"always",
+				"lowerCase"
+			],
+			"type-enum": [
+				2,
+				"always",
+				[
+					"build",
+					"chore",
+					"ci",
+					"docs",
+					"feat",
+					"fix",
+					"perf",
+					"refactor",
+					"revert",
+					"style",
+					"test"
+				]
+			]
+		}
+	},
+	"lint-staged": {
+		"*.{ts,js}": "eslint --ext ts,js --fix"
+	},
+	"release-it": {
+		"git": {
+			"commitMessage": "chore(release): ${version}",
+			"tagAnnotation": "chore(release): ${version}"
+		},
+		"npm": {
+			"publish": false
+		},
+		"github": {
+			"release": true,
+			"releaseName": "v${version}"
+		},
+		"plugins": {
+			"@release-it/conventional-changelog": {
+				"preset": "angular",
+				"infile": "CHANGELOG.md"
+			}
+		},
+		"hooks": {
+			"before:init": [
+				"pnpm lint",
+				"pnpm test",
+				"pnpm build:no-emit"
+			]
+		}
+	},
+	"renovate": {
+		"extends": [
+			"config:base",
+			":semanticCommits",
+			":semanticPrefixChore",
+			":preserveSemverRanges",
+			":rebaseStalePrs",
+			":label(Type: Dependencies)"
+		]
+	}
+}

@@ -1,0 +1,5 @@
+node_modules
+dist
+# Migration files with a '.js' extension are transpiled.
+migrations/*.js
+knexfile.js

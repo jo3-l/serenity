@@ -1,0 +1,125 @@
+---
+extends:
+  - marine/prettier/node
+  - plugin:import/errors
+  - plugin:import/warnings
+  - plugin:import/typescript
+  - plugin:jest/recommended
+  - plugin:jest/style
+
+plugins:
+  - simple-import-sort
+  - optimize-regex
+  - tsdoc
+  - jest
+
+parserOptions:
+  project:
+    - src/tsconfig.json
+    - scripts/tsconfig.json
+    - tests/tsconfig.json
+    - migrations/tsconfig.json
+    - tsconfig.knexfile.json
+    - tsconfig.eslint.json
+
+rules:
+  prettier/prettier:
+    - error
+    - endOfLine: auto
+  simple-import-sort/imports:
+    - error
+    - groups:
+        # Side effect imports.
+        - ['^\u0000']
+        # Packages
+        - ['^@?\\w']
+        # Module aliases.
+        - ['^#']
+        # Relative imports.
+        - ['^\.']
+  tsdoc/syntax: warn
+  no-duplicate-imports: off
+  '@typescript-eslint/no-duplicate-imports': error
+  import/no-unresolved: off
+  optimize-regex/optimize-regex: error
+  curly:
+    - error
+    - multi-line
+  '@typescript-eslint/no-unnecessary-condition':
+    - error
+    - allowConstantLoopConditions: true
+  '@typescript-eslint/no-throw-literal': off
+  '@typescript-eslint/naming-convention':
+    - error
+    - selector:
+        - enumMember
+        - typeAlias
+        - interface
+        - enum
+        - class
+      format:
+        - PascalCase
+      leadingUnderscore: forbid
+      trailingUnderscore: forbid
+
+    - selector:
+        - method
+        - accessor
+        - parameterProperty
+      format:
+        - strictCamelCase
+
+    - selector:
+        - property
+      format:
+        - strictCamelCase
+        - UPPER_CASE
+      leadingUnderscore: allow
+      trailingUnderscore: forbid
+
+    - selector: typeParameter
+      custom:
+        # Either an uppercase alphanumeric character with an optional number
+        # following it or the literal character 'T' followed by a PascalCased
+        # identifier.
+        regex: '^(?:[A-Z]\d*|T(?:[A-Z][a-z]*)*)$'
+        match: true
+      format: null
+
+    - selector: variable
+      format:
+        - strictCamelCase
+        - UPPER_CASE
+      leadingUnderscore: allow
+      trailingUnderscore: forbid
+
+    - selector: function
+      format:
+        - strictCamelCase
+      leadingUnderscore: forbid
+      trailingUnderscore: forbid
+  '@typescript-eslint/member-ordering':
+    - error
+    - default:
+        - signature
+        - public-instance-field
+        - protected-instance-field
+        - private-instance-field
+        - instance-field
+        - public-constructor
+        - protected-constructor
+        - private-constructor
+        - constructor
+        - public-instance-method
+        - protected-instance-method
+        - private-instance-method
+        - instance-method
+        - public-static-field
+        - protected-static-field
+        - private-static-field
+        - static-field
+        - public-static-method
+        - protected-static-method
+        - private-static-method
+        - static-method
+  '@typescript-eslint/consistent-type-imports': error

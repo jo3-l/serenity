@@ -1,0 +1,45 @@
+# Logs
+pnpm-debug.log*
+logs
+*.log
+
+# Dependencies
+node_modules
+
+# Build artifacts
+dist
+migrations/*.js
+knexfile.js
+
+# Configuration files
+src/config.yml
+src/config.example.yml
+
+# Coverage
+coverage
+*.lcov
+.nyc_output
+
+# Testing
+jest.config.ts
+tests
+
+# IDE
+.vscode
+
+# Development tooling
+.eslintignore
+.eslintrc.yml
+tsconfig.eslint.json
+.prettierignore
+.prettierrc.json
+
+# Miscellaneous
+scripts
+.git
+.gitattributes
+.gitignore
+.github
+.husky
+README.md
+LICENSE.md

@@ -1,0 +1,9 @@
+import type Knex from 'knex';
+
+export function up(knex: Knex) {
+	// Migration logic here...
+}
+
+export function down() {
+	throw new Error('Database migrations are forward-only.');
+}

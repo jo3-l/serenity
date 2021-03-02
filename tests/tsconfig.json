@@ -1,0 +1,18 @@
+{
+	"extends": "../tsconfig.base.json",
+	"include": [".", "../src/**/*"],
+	"compilerOptions": {
+		"noEmit": true,
+		"baseUrl": "../src",
+		"paths": {
+			"#framework": ["framework/index"],
+			"#framework/*": ["framework/*"],
+			"#database/*": ["lib/database/*"],
+			"#structures/*": ["lib/structures/*"],
+			"#utils/*": ["lib/utils/*"],
+			"#lib/*": ["lib/*"],
+			"#root/*": ["*"]
+		}
+	},
+	"references": [{ "path": "../src" }]
+}

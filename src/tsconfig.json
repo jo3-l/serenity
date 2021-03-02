@@ -1,0 +1,21 @@
+{
+	"extends": "../tsconfig.base.json",
+	"include": [".", "./config.yml"],
+	"compilerOptions": {
+		"typeRoots": ["./lib/types/declarations", "../node_modules/@types"],
+		"outDir": "../dist",
+		"rootDir": ".",
+		"baseUrl": ".",
+		"paths": {
+			"#framework": ["framework/index"],
+			"#framework/*": ["framework/*"],
+			"#database/*": ["lib/database/*"],
+			"#structures/*": ["lib/structures/*"],
+			"#utils/*": ["lib/utils/*"],
+			"#lib/*": ["lib/*"],
+			"#root/*": ["*"]
+		},
+		"composite": true,
+		"plugins": [{ "transform": "typescript-transform-paths" }]
+	}
+}

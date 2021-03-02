@@ -1,0 +1,78 @@
+# Whether the bot is running in production.
+production: false
+
+# Postgres username to connect with.
+postgres_user: serenity
+
+# Password of the Postgres user to connect with.
+postgres_password: admin
+
+# Database name to use.
+postgres_db: serenity
+
+# Postgres hostname.
+postgres_host: localhost
+
+# Postgres port.
+postgres_port: 5432
+
+# A list of owner IDs.
+owner_ids:
+  - 'your-id-here'
+  - 'other-id-here'
+
+# A list of default prefixes for the bot. Note that mentioning the bot will
+# always trigger it.
+prefixes:
+  - '?'
+
+# A list of natural language prefixes for the bot. Even if the normal prefixes
+# have been overridden for a given guild, the natural language prefixes will
+# still be available as long as they are not explicitly disabled in the guild's
+# settings.
+#
+# You can leave this unset if you don't want to specify any natural language
+# prefixes.
+nlp_prefixes:
+  - 'serenity,'
+  - 'serenity '
+
+# Discord token to connect with.
+discord_token: 'your-discord-token-here'
+
+# A list of activity sets to rotate through at certain times of the day. For
+# example, you can rotate through a certain set of activities from 0-8AM, then
+# another completely different set of activities from 8AM-11PM, etc.
+#
+# If you would like to always rotate through the same set of activities, use
+# 00:00 as the start time and 24:00 as the end time as shown below. If there is
+# no set of activities that match on a given time, the activity will be cleared.
+#
+# You can leave this unset if you don't want an activity rotation.
+activity_rotation:
+  # Note that all times are specified in UTC.
+  - startTime: '00:00' # The start time is inclusive.
+    endTime: '23:59' # As is the end time.
+    activities:
+      # Within the name, you can access the {{ version }} variable which is the
+      # current bot version.
+      - name: 'v{{ version }}'
+        type: 'PLAYING'
+
+      - name: 'the stars in the night sky'
+        type: 'WATCHING'
+
+      - name: 'the sun set'
+        type: 'WATCHING'
+
+      - name: 'Serenity, help'
+        type: 'LISTENING'
+
+      - name: 'some cool game'
+        type: 'STREAMING'
+        url: 'https://twitch.tv/my_stream_url'
+
+# The interval at which new activities will be polled in milliseconds. Changing
+# this to below the default of 5 minutes is not recommended as it may be viewed
+# as API spam.
+activity_rotation_interval: 300_000

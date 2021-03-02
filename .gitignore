@@ -1,0 +1,21 @@
+# Logs
+pnpm-debug.log*
+logs
+*.log
+
+# Dependencies
+node_modules
+
+# Build artifacts
+dist
+# Migration files with a '.js' extension are transpiled.
+migrations/*.js
+knexfile.js
+
+# Coverage
+coverage
+*.lcov
+.nyc_output
+
+# Sensitive configuration files
+src/config.yml
