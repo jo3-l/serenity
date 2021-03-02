@@ -13,8 +13,8 @@
 
 <div align='center'>
 	<img
-	    src="https://img.shields.io/lgtm/grade/java/github/jo3-l/serenity?style=for-the-badge"
-	    alt="Code Quality"
+	    src='https://img.shields.io/lgtm/grade/javascript/github/jo3-l/serenity?style=for-the-badge'
+	    alt='Code Quality'
 	/>
 	<img
 		src='https://img.shields.io/github/languages/top/jo3-l/serenity.svg?style=for-the-badge'
