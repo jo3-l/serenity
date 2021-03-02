@@ -31,7 +31,9 @@ jobs:
         with:
           version: latest
           run_install:
-            args: [--frozen-lockfile, --ignore-scripts]
+            args:
+              - --frozen-lockfile
+              - --ignore-scripts
 
       - name: Run ESLint
         run: pnpm lint
@@ -94,7 +96,9 @@ jobs:
         with:
           version: latest
           run_install:
-            args: [--frozen-lockfile, --ignore-scripts]
+            args:
+              - --frozen-lockfile
+              - --ignore-scripts
 
       - name: Register problem matcher
         run: echo "##[add-matcher].github/problem-matchers/tsc.json"
