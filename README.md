@@ -25,7 +25,7 @@
 		alt='License'
 	/>
 	<img
-		src='https://img.shields.io/github/workflow/status/jo3-l/Continuous%20Integration/serenity.svg?style=for-the-badge'
+		src='https://img.shields.io/github/workflow/status/jo3-l/serenity/Continuous%20Integration.svg?style=for-the-badge'
 		alt='Build Status'
 	/>
 </div>
