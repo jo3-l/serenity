@@ -7,22 +7,22 @@
  */
 
 /**
- * Output from the parser. Includes several convenience methods for accessing
- * data from it.
+ * Output of the parser. Includes several convenience methods for accessing data
+ * from it.
  */
 export class ParserOutput {
 	/**
-	 * A set of flag names in the input.
+	 * The parsed options.
 	 */
 	public readonly flags = new Set<string>();
 
 	/**
-	 * A map of option flag name to its values.
+	 * The parsed options mapped to their value.
 	 */
-	public readonly optionFlags = new Map<string, string[]>();
+	public readonly options = new Map<string, string[]>();
 
 	/**
 	 * A list of positional arguments, in the order they were provided.
 	 */
-	public readonly unordered: string[] = [];
+	public readonly ordered: string[] = [];
 }
