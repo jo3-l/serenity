@@ -5,6 +5,8 @@
  *
  * Copyright (c) 2020 1Computer.
  */
+import type { Token } from './Token';
+
 import { getCode, isWhiteSpace } from '@skyra/char';
 
 /**
@@ -63,9 +65,12 @@ export class Lexer implements IterableIterator<Token> {
 
 	public next() {
 		if (this.done) return { done: true as const, value: undefined };
-		if (!this.quotes.size) return { done: false, value: this.nextTokenNoQuotes() };
+
+		// If there are no quotes registered, then return the next token ignoring quotes.
+		if (!this.quotes.size) return { done: false, value: this.nextTokenIgnoreQuotes() };
 
 		const firstChar = this.input[this.position];
+
 		// If this is the last character, it cannot be a quoted phrase, so we
 		// can simply construct a token with the value being the next character.
 		if (this.position === this.input.length - 1) {
@@ -79,9 +84,10 @@ export class Lexer implements IterableIterator<Token> {
 
 		// See if the first character is an open quote.
 		const closeQuote = this.quotes.get(firstChar);
-		if (!closeQuote) return { done: false, value: this.nextTokenNoQuotes() };
 
-		// Skip past the first quote.
+		// If the first character is not an open quote, return the next token ignoring quotes.
+		if (!closeQuote) return { done: false, value: this.nextTokenIgnoreQuotes() };
+
 		this.advance(1);
 
 		let buffer = '';
@@ -90,7 +96,7 @@ export class Lexer implements IterableIterator<Token> {
 		while (!this.done) {
 			const char = this.input[this.position];
 			// If the current character is the matching closing quote, end the
-			// token here.
+			// value here.
 			if (char === closeQuote) {
 				this.advance(1);
 				const trailing = this.consumeLeadingSpaces();
@@ -100,15 +106,8 @@ export class Lexer implements IterableIterator<Token> {
 
 			const nextChar = this.peek();
 			if (char === '\\' && nextChar) {
-				// A backslash + a close quote resolves to just the close quote.
-				if (this.closeQuotes.has(nextChar)) buffer += nextChar;
-				// Two backslashes in a row resolves to a single backslash.
-				else if (nextChar === '\\') buffer += '\\';
-				// Otherwise, the backslash is interpreted literally.
-				else buffer += `\\${nextChar}`;
-
+				buffer += this.resolveEscaped(nextChar);
 				raw += `\\${nextChar}`;
-				// Skip past the backslash + next character.
 				this.advance(2);
 			} else {
 				buffer += char;
@@ -121,7 +120,7 @@ export class Lexer implements IterableIterator<Token> {
 		// isn't actually a valid quoted phrase, so we will have to backtrack to
 		// the initial position and match a phrase ignoring quotes.
 		this.position = initialPosition;
-		return { done: false, value: this.nextTokenNoQuotes() };
+		return { done: false, value: this.nextTokenIgnoreQuotes() };
 	}
 
 	public [Symbol.iterator]() {
@@ -137,31 +136,23 @@ export class Lexer implements IterableIterator<Token> {
 		return [...this];
 	}
 
-	private nextTokenNoQuotes(): Token {
+	private nextTokenIgnoreQuotes(): Token {
 		let buffer = '';
 		let raw = '';
 		while (!this.done) {
 			const char = this.input[this.position];
-			// If the current character is a whitespace character, end the token
-			// here.
+
+			// End the value of the token when we reach a whitespace character.
 			if (isWhiteSpace(getCode(char))) {
 				const trailing = this.consumeLeadingSpaces();
 				return { value: buffer, raw, trailing };
 			}
 
 			const nextChar = this.peek();
-			// If the current character is a backslash and there is a character
-			// after it...
-			if (char === '\\' && nextChar) {
-				// A backslash + a close quote resolves to just the close quote.
-				if (this.closeQuotes.has(nextChar)) buffer += nextChar;
-				// Two backslashes in a row resolves to a single backslash.
-				else if (nextChar === '\\') buffer += '\\';
-				// Otherwise, the backslash is interpreted literally.
-				else buffer += `\\${nextChar}`;
 
+			if (char === '\\' && nextChar) {
+				buffer += this.resolveEscaped(nextChar);
 				raw += `\\${nextChar}`;
-				// Skip past the backslash + current character.
 				this.advance(2);
 			} else {
 				buffer += char;
@@ -177,6 +168,11 @@ export class Lexer implements IterableIterator<Token> {
 		this.position += n;
 	}
 
+	private peek() {
+		if (this.position + 1 >= this.input.length) return undefined;
+		return this.input[this.position + 1];
+	}
+
 	private consumeLeadingSpaces() {
 		let spaces = '';
 		while (!this.done) {
@@ -190,41 +186,12 @@ export class Lexer implements IterableIterator<Token> {
 		return spaces;
 	}
 
-	private peek() {
-		if (this.position + 1 >= this.input.length) return undefined;
-		return this.input[this.position + 1];
+	private resolveEscaped(char: string) {
+		// `\"` becomes `"`, `\\` becomes `\`. Otherwise, the character is left
+		// unchanged.
+		if (this.closeQuotes.has(char) || char === '\\') return char;
+		return `\\${char}`;
 	}
-}
-
-/**
- * A single token.
- */
-export interface Token {
-	/**
-	 * Resolved value of the token.
-	 *
-	 * @remarks
-	 * This will not contain trailing spaces. If the original value was wrapped
-	 * in a set of quotes, and the quotes match those set in the Lexer, they
-	 * will be stripped.
-	 */
-	value: string;
-
-	/**
-	 * Raw value of the token.
-	 *
-	 * @remarks
-	 * This will not contain trailing spaces, but will contain quotes.
-	 */
-	raw: string;
-
-	/**
-	 * Trailing spaces after this token.
-	 *
-	 * @remarks
-	 * This will be the empty string `''` if there were no trailing spaces.
-	 */
-	trailing: string;
 }
 
 /**
