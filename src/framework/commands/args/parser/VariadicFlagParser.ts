@@ -93,7 +93,7 @@ export class VariadicFlagParser implements Parser {
 	}
 
 	private nextValue() {
-		// If the current token is the last one, return `undefined`.
+		// If the current token is the last one, return undefined.
 		if (this.position === this.tokens.length - 1) return undefined;
 
 		// Add the first token's value to the buffer.
@@ -104,10 +104,10 @@ export class VariadicFlagParser implements Parser {
 		while (!this.done) {
 			const token = this.tokens[this.position];
 			const isFlagOrOption = this.registeredOptions.has(token.raw) || this.registeredFlags.has(token.raw);
-			// The value ends when we reach a flag or option.
+			// If the token's value is a flag or option, the option value ends here.
 			if (isFlagOrOption) return buffer;
 
-			// Otherwise, add the token's value to the buffer, and move on to the next one.
+			// Otherwise, add the token's value to the buffer, and move on to the next token.
 			buffer += firstToken.raw + firstToken.trailing;
 			this.advance(1);
 		}
