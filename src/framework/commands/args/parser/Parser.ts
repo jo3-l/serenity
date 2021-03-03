@@ -1,12 +1,13 @@
-import type { Token } from '../Lexer';
+import type { Token } from '../Token';
 import type { ParserOutput } from './ParserOutput';
 
 /**
- * Separates a list of tokens into flags, option flags, and unordered arguments.
+ * Separates a list of tokens into flags, option flags, and positional
+ * arguments.
  */
 export interface Parser {
 	/**
-	 * Separates a list of tokens into flags, option flags, and unordered
+	 * Separates a list of tokens into flags, option flags, and positional
 	 * arguments.
 	 *
 	 * @param tokens - Tokens to parse.
