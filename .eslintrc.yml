@@ -40,6 +40,9 @@ rules:
   tsdoc/syntax: warn
   no-duplicate-imports: off
   '@typescript-eslint/no-duplicate-imports': error
+  # The following rule conflicts with Prettier in certain cases.
+  # Also see https://github.com/typescript-eslint/typescript-eslint/issues/1824.
+  '@typescript-eslint/indent': off
   import/no-unresolved: off
   optimize-regex/optimize-regex: error
   curly:
