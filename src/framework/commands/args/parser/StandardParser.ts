@@ -66,7 +66,7 @@ export class StandardParser extends Parser {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (!ok && !this.done) ok = this.parseFlag(output);
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (!ok && !this.done) ok = this.parseOrdered(output);
+		if (!ok && !this.done) this.parseOrdered(output);
 
 		return { done: false, value: output };
 	}
