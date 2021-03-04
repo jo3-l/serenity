@@ -16,7 +16,6 @@ export class Lexer implements IterableIterator<Token> {
 	private input = '';
 	private position = 0;
 	private readonly quotes = new Map<string, string>();
-	private readonly closeQuotes = new Set<string>();
 
 	/**
 	 * Sets the input to use. This will reset the lexer.
@@ -26,6 +25,7 @@ export class Lexer implements IterableIterator<Token> {
 	 */
 	public setInput(input: string) {
 		this.input = input.trimLeft();
+		this.reset();
 		return this;
 	}
 
@@ -39,10 +39,7 @@ export class Lexer implements IterableIterator<Token> {
 	 * @returns The lexer.
 	 */
 	public setQuotes(quotes: QuotePair[]) {
-		for (const [open, close] of quotes) {
-			this.quotes.set(open, close);
-			this.closeQuotes.add(close);
-		}
+		for (const [open, close] of quotes) this.quotes.set(open, close);
 		return this;
 	}
 
@@ -63,134 +60,88 @@ export class Lexer implements IterableIterator<Token> {
 		return this.position >= this.input.length;
 	}
 
-	public next() {
-		if (this.done) return { done: true as const, value: undefined };
-
-		// If there are no quotes registered, then return the next token ignoring quotes.
-		if (!this.quotes.size) return { done: false, value: this.nextTokenIgnoreQuotes() };
-
-		const firstChar = this.input[this.position];
-
-		// If this is the last character, it cannot be a quoted phrase, so we
-		// can simply construct a token with the value being the next character.
-		if (this.position === this.input.length - 1) {
-			this.advance(1);
-			const token = { value: firstChar, raw: firstChar, trailing: '' };
-			return { done: false, value: token };
-		}
-
-		// Store the initial position in case we need to backtrack later.
-		const initialPosition = this.position;
-
-		// See if the first character is an open quote.
-		const closeQuote = this.quotes.get(firstChar);
-
-		// If the first character is not an open quote, return the next token ignoring quotes.
-		if (!closeQuote) return { done: false, value: this.nextTokenIgnoreQuotes() };
-
-		this.advance(1);
-
-		let buffer = '';
-		let raw = '';
-		// Try parsing the next token as a quoted string.
-		while (!this.done) {
-			const char = this.input[this.position];
-			// If the current character is the matching closing quote, end the
-			// value here.
-			if (char === closeQuote) {
-				this.advance(1);
-				const trailing = this.consumeLeadingSpaces();
-				const token = { value: buffer, raw: firstChar + raw + closeQuote, trailing };
-				return { done: false, value: token };
-			}
-
-			const nextChar = this.peek();
-			if (char === '\\' && nextChar) {
-				buffer += this.resolveEscaped(nextChar);
-				raw += `\\${nextChar}`;
-				this.advance(2);
-			} else {
-				buffer += char;
-				raw += char;
-				this.advance(1);
-			}
-		}
-
-		// If we reached the end of input without finding a close quote, this
-		// isn't actually a valid quoted phrase, so we will have to backtrack to
-		// the initial position and match a phrase ignoring quotes.
-		this.position = initialPosition;
-		return { done: false, value: this.nextTokenIgnoreQuotes() };
+	public lex() {
+		return [...this];
 	}
 
 	public [Symbol.iterator]() {
 		return this;
 	}
 
-	/**
-	 * Runs the lexer.
-	 *
-	 * @returns All the tokens lexed.
-	 */
-	public lex() {
-		return [...this];
-	}
+	public next() {
+		if (this.done) return { done: true as const, value: undefined };
 
-	private nextTokenIgnoreQuotes(): Token {
-		let buffer = '';
-		let raw = '';
-		while (!this.done) {
-			const char = this.input[this.position];
+		const char = this.input[this.position];
+		const isMaybeQuoted =
+			this.quotes.size && // Has quotes registered
+			this.position !== this.input.length - 1 && // Not the last character
+			this.quotes.has(char); // Current character is an open quote.
 
-			// End the value of the token when we reach a whitespace character.
-			if (isWhiteSpace(getCode(char))) {
-				const trailing = this.consumeLeadingSpaces();
-				return { value: buffer, raw, trailing };
-			}
+		if (isMaybeQuoted) {
+			const startPosition = this.position;
+			const closeQuote = this.quotes.get(char)!;
 
-			const nextChar = this.peek();
+			// Skip past the open quote.
+			this.advance(1);
+			const result = this.consumeWhile((c) => c !== closeQuote, true);
 
-			if (char === '\\' && nextChar) {
-				buffer += this.resolveEscaped(nextChar);
-				raw += `\\${nextChar}`;
-				this.advance(2);
-			} else {
-				buffer += char;
-				raw += char;
+			if (result) {
+				const closeQuote = this.input[this.position];
+				// Skip past the close quote.
 				this.advance(1);
+				const trailing = this.consumeWhile((c) => isWhiteSpace(getCode(c))).value;
+				const token = { raw: char + result.raw + closeQuote, value: result.value, trailing };
+				return { done: false, value: token };
 			}
+
+			// Backtrack to the start position, as we were unable to match a
+			// quoted string.
+			this.position = startPosition;
 		}
 
-		return { value: buffer, raw, trailing: '' };
+		const result = this.consumeWhile((c) => !isWhiteSpace(getCode(c)));
+		const trailing = this.consumeWhile((c) => isWhiteSpace(getCode(c))).value;
+		const token = { ...result, trailing: trailing };
+		return { done: false, value: token };
+	}
+
+	private consumeWhile(
+		f: (char: string) => boolean,
+		returnUndefinedOnEof: true,
+	): { raw: string; value: string } | undefined;
+	private consumeWhile(f: (char: string) => boolean, returnUndefinedOnEof?: false): { raw: string; value: string };
+	private consumeWhile(f: (char: string) => boolean, returnUndefinedOnEof = false) {
+		let raw = '';
+		let value = '';
+		while (!this.done) {
+			const char = this.input[this.position];
+			const ok = f(char);
+
+			if (!ok) return { raw, value };
+
+			const hasNext = this.position + 1 < this.input.length;
+			if (char === '\\' && hasNext) {
+				const nextChar = this.input[this.position + 1];
+
+				// '\c' -> 'c' for any character 'c'.
+				value += nextChar;
+				raw += `\\${nextChar}`;
+
+				this.advance(2);
+				continue;
+			}
+
+			value += char;
+			raw += char;
+			this.advance(1);
+		}
+
+		if (returnUndefinedOnEof) return undefined;
+		return { raw, value };
 	}
 
 	private advance(n: number) {
 		this.position += n;
-	}
-
-	private peek() {
-		if (this.position + 1 >= this.input.length) return undefined;
-		return this.input[this.position + 1];
-	}
-
-	private consumeLeadingSpaces() {
-		let spaces = '';
-		while (!this.done) {
-			const char = this.input[this.position];
-			if (!isWhiteSpace(getCode(char))) return spaces;
-			spaces += char;
-
-			this.advance(1);
-		}
-
-		return spaces;
-	}
-
-	private resolveEscaped(char: string) {
-		// `\"` becomes `"`, `\\` becomes `\`. Otherwise, the character is left
-		// unchanged.
-		if (this.closeQuotes.has(char) || char === '\\') return char;
-		return `\\${char}`;
 	}
 }
 

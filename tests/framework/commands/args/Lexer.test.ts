@@ -179,8 +179,8 @@ describe('Lexer#lex()', () => {
 				.lex();
 
 			expect(tokens).toStrictEqual([
-				{ value: String.raw`\-hello`, raw: String.raw`\-hello`, trailing: ' ' },
-				{ value: String.raw`\worl\d`, raw: String.raw`"\\worl\d"`, trailing: '' },
+				{ value: String.raw`-hello`, raw: String.raw`\-hello`, trailing: ' ' },
+				{ value: String.raw`\world`, raw: String.raw`"\\worl\d"`, trailing: '' },
 			]);
 		});
 
