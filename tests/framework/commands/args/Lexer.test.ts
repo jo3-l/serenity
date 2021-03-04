@@ -260,6 +260,20 @@ describe('Lexer#lex()', () => {
 
 		expect(tokens).toStrictEqual([{ value: 's', raw: 's', trailing: '' }]);
 	});
+
+	it('can parse multiple inputs', () => {
+		const lexer = new Lexer().setQuotes([['"', '"']]);
+
+		expect(lexer.setInput('hello "world"').lex()).toStrictEqual([
+			{ value: 'hello', raw: 'hello', trailing: ' ' },
+			{ value: 'world', raw: '"world"', trailing: '' },
+		]);
+		expect(lexer.setInput('simple "text" here').lex()).toStrictEqual([
+			{ value: 'simple', raw: 'simple', trailing: ' ' },
+			{ value: 'text', raw: '"text"', trailing: ' ' },
+			{ value: 'here', raw: 'here', trailing: '' },
+		]);
+	});
 });
 
 describe('Lexer#reset()', () => {
