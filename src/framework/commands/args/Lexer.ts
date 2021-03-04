@@ -68,8 +68,8 @@ export class Lexer implements IterableIterator<Token> {
 		return this;
 	}
 
-	public next() {
-		if (this.done) return { done: true as const, value: undefined };
+	public next(): IteratorResult<Token> {
+		if (this.done) return { done: true, value: undefined };
 
 		const char = this.input[this.position];
 		const isMaybeQuoted =
