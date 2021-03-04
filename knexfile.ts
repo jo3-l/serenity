@@ -1,6 +1,6 @@
 import { POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_USER } from './src/lib/setup/config';
 
-import type { Config } from 'knex';
+import type { Knex } from 'knex/types';
 import { extname } from 'path';
 
 // If the Knex configuration file used had a `.js` extension, then that implies
@@ -9,7 +9,7 @@ import { extname } from 'path';
 // migration files with `ts-node`.
 const migrationsExt = extname(__dirname) === 'js' ? '.js' : '.ts';
 
-const config: Config = {
+const config: Knex.Config = {
 	client: 'postgresql',
 	// TODO
 	connection: {
