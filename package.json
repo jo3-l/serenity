@@ -24,7 +24,8 @@
 		"lint:fix": "eslint . --ext js,ts --fix",
 		"prettier:fix": "prettier --write \"**/*.ts\"",
 		"pretty-quick": "pretty-quick --staged",
-		"lint-staged": "lint-staged"
+		"lint-staged": "lint-staged",
+		"prepare": "husky install"
 	},
 	"repository": {
 		"type": "git",
