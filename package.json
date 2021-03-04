@@ -71,7 +71,7 @@
 		"@typescript-eslint/parser": "^4.16.1",
 		"eslint": "^7.21.0",
 		"eslint-config-marine": "^8.2.0",
-		"eslint-config-prettier": "^7.2.0",
+		"eslint-config-prettier": "^8.0.0",
 		"eslint-plugin-import": "^2.22.1",
 		"eslint-plugin-jest": "^24.1.5",
 		"eslint-plugin-optimize-regex": "^1.2.0",
