@@ -1,9 +1,17 @@
-import type { Token } from '../Token';
-import type { Parser } from './Parser';
+/**
+ * The code here is heavily inspired by 1Computer1's
+ * [Lexure](https://github.com/1Computer1/lexure), licensed under the MIT
+ * license.
+ *
+ * Copyright (c) 2020 1Computer.
+ */
+
+import type { FlagMetadata } from './FlagMetadata';
+import { Parser } from './Parser';
 import { ParserOutput } from './ParserOutput';
 
 /**
- * A standard parser intended to be used in most cases.
+ * A standard parser intended to be used for most cases.
  *
  * Given a set of flags and options, it parses the list of tokens according to
  * the following general rules:
@@ -14,17 +22,24 @@ import { ParserOutput } from './ParserOutput';
  *  - If the option prefix is the last token, then it is discarded.
  * - Otherwise, the token is added to the list of ordered arguments.
  */
-export class StandardParser implements Parser {
-	private readonly registeredFlags = new Map<string, string>();
-	private readonly registeredOptions = new Map<string, string>();
+export class StandardParser extends Parser {
+	/**
+	 * Registered flag prefixes, mapped to their IDs.
+	 */
+	public readonly registeredFlags = new Map<string, string>();
 
 	/**
-	 * Sets the flags to be used during parsing.
+	 * Registered option prefixes, mapped to their IDs.
+	 */
+	public readonly registeredOptions = new Map<string, string>();
+
+	/**
+	 * Registers flags to be used during parsing.
 	 *
 	 * @param flags - A list of flag metadata.
 	 * @returns The parser.
 	 */
-	public setFlags(flags: FlagMetadata[]) {
+	public registerFlags(flags: FlagMetadata[]) {
 		for (const { id, prefixes } of flags) {
 			for (const prefix of prefixes) this.registeredFlags.set(prefix, id);
 		}
@@ -32,63 +47,62 @@ export class StandardParser implements Parser {
 	}
 
 	/**
-	 * Sets the options to be used during parsing.
+	 * Registers the options to be used during parsing.
 	 *
 	 * @param options - A list of option metadata.
 	 * @returns The parser.
 	 */
-	public setOptions(options: FlagMetadata[]) {
+	public registerOptions(options: FlagMetadata[]) {
 		for (const { id, prefixes } of options) {
 			for (const prefix of prefixes) this.registeredOptions.set(prefix, id);
 		}
 		return this;
 	}
 
-	public parse(tokens: Token[]) {
-		const output = new ParserOutput();
+	public next(output = new ParserOutput()): IteratorResult<ParserOutput> {
+		if (this.done) return { done: true, value: undefined };
 
-		let i = 0;
-		while (i < tokens.length) {
-			const token = tokens[i];
+		let ok = this.parseOption(output);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!ok && !this.done) ok = this.parseFlag(output);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!ok && !this.done) ok = this.parseOrdered(output);
 
-			const optionId = this.registeredOptions.get(token.raw);
-			if (optionId) {
-				// If this is the last token, discard it as all options must have values.
-				if (i === tokens.length - 1) break;
-
-				const value = tokens[i + 1].value;
-
-				const values = output.options.get(optionId);
-				if (values) values.push(value);
-				else output.options.set(optionId, [value]);
-
-				i += 2;
-				continue;
-			}
-
-			const flagId = this.registeredFlags.get(token.raw);
-			if (flagId) output.flags.add(flagId);
-			else output.ordered.push(token.value);
-
-			i += 1;
-		}
-
-		return output;
+		return { done: false, value: output };
 	}
-}
 
-/**
- * Metadata for flags or options.
- */
-export interface FlagMetadata {
-	/**
-	 * The ID of this flag.
-	 */
-	id: string;
+	private parseOption(output: ParserOutput) {
+		const token = this.input[this.position];
+		const optionId = this.registeredOptions.get(token.raw);
+		if (!optionId) return undefined;
 
-	/**
-	 * The prefixes of this flag. For example, given that this is `['--help',
-	 * '-h']`, both `-h` and `--help` would be recognized as flags of this type.
-	 */
-	prefixes: string[];
+		this.advance(1);
+		// No corresponding value, so discard the option.
+		if (this.done) return false;
+
+		const value = this.input[this.position].value;
+		const values = output.options.get(optionId);
+		if (values) values.push(value);
+		else output.options.set(optionId, [value]);
+
+		this.advance(1);
+		return true;
+	}
+
+	private parseFlag(output: ParserOutput) {
+		const token = this.input[this.position];
+		const flagId = this.registeredFlags.get(token.raw);
+		if (!flagId) return false;
+
+		output.flags.add(flagId);
+		this.advance(1);
+		return true;
+	}
+
+	private parseOrdered(output: ParserOutput) {
+		const token = this.input[this.position];
+		output.ordered.push(token);
+		this.advance(1);
+		return true;
+	}
 }

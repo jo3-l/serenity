@@ -1,11 +1,10 @@
-import type { Token } from '../Token';
-import type { Parser } from './Parser';
+import type { FlagMetadata } from './FlagMetadata';
+import { Parser } from './Parser';
 import { ParserOutput } from './ParserOutput';
-import type { FlagMetadata } from './StandardParser';
 
 /**
- * A parser intended to handle the case of when input is only expected to be
- * made up of flags and option flags. For example, the following input:
+ * A parser made to handle input that is made up of only flags and options.
+ * Example:
  *
  * `--option hello world --foo bar baz`
  *
@@ -14,22 +13,20 @@ import type { FlagMetadata } from './StandardParser';
  * respectively (the result from using the `StandardParser`).
  *
  * In other words, this allows you to specify multi-word values for option flags
- * without using quotes, but does not allow positional arguments or empty
- * strings as values (`""` would be interpreted literally).
+ * without using quotes, but does so at the cost of not parsing positional
+ * arguments.
  */
-export class VariadicFlagParser implements Parser {
+export class VariadicFlagParser extends Parser {
 	private readonly registeredFlags = new Map<string, string>();
 	private readonly registeredOptions = new Map<string, string>();
-	private tokens: Token[] = [];
-	private position = 0;
 
 	/**
-	 * Sets the flags to be used during parsing.
+	 * Registers flags to be used during parsing.
 	 *
 	 * @param flags - A list of flag metadata.
 	 * @returns The parser.
 	 */
-	public setFlags(flags: FlagMetadata[]) {
+	public registerFlags(flags: FlagMetadata[]) {
 		for (const { id, prefixes } of flags) {
 			for (const prefix of prefixes) this.registeredFlags.set(prefix, id);
 		}
@@ -37,81 +34,70 @@ export class VariadicFlagParser implements Parser {
 	}
 
 	/**
-	 * Sets the options to be used during parsing.
+	 * Registers options to be used during parsing.
 	 *
 	 * @param options - A list of option metadata.
 	 * @returns The parser.
 	 */
-	public setOptions(options: FlagMetadata[]) {
+	public registerOptions(options: FlagMetadata[]) {
 		for (const { id, prefixes } of options) {
 			for (const prefix of prefixes) this.registeredOptions.set(prefix, id);
 		}
 		return this;
 	}
 
-	public parse(tokens: Token[]) {
-		this.reset();
-		this.tokens = tokens;
+	public next(output = new ParserOutput()): IteratorResult<ParserOutput> {
+		if (this.done) return { done: true, value: undefined };
 
-		const output = new ParserOutput();
-		while (!this.done) {
-			const token = tokens[this.position];
-
-			const optionId = this.registeredOptions.get(token.value);
-			if (optionId) {
-				const value = this.nextValue();
-				// If the option does not have a value, it is invalid and should
-				// be discarded.
-				if (!value) continue;
-
-				const values = output.options.get(optionId);
-				if (values) values.push(value);
-				else output.options.set(optionId, [value]);
-
-				continue;
-			}
-
-			const flagId = this.registeredFlags.get(token.value);
-			if (flagId) output.flags.add(flagId);
-
+		let ok = this.parseOption(output);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!ok && !this.done) ok = this.parseFlag(output);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!ok && !this.done) {
+			// The current argument isn't a flag or option, so we discard it.
 			this.advance(1);
 		}
 
-		return output;
+		return { done: false, value: output };
 	}
 
-	private get done() {
-		return this.position <= this.tokens.length;
-	}
+	private parseOption(output: ParserOutput) {
+		const firstToken = this.input[this.position];
+		const optionId = this.registeredOptions.get(firstToken.raw);
+		if (!optionId) return undefined;
 
-	private reset() {
-		this.position = 0;
-	}
+		this.advance(1);
+		// No corresponding value, so discard the option.
+		if (this.done) return false;
 
-	private advance(n: number) {
-		this.position += n;
-	}
-
-	private nextValue() {
-		// If the current token is the last one, return undefined.
-		if (this.position === this.tokens.length - 1) return undefined;
-
-		// Add the first token's value to the buffer.
-		const firstToken = this.tokens[this.position + 1];
-		let buffer = firstToken.raw + firstToken.trailing;
+		// Always add the token immediately after the option to its value.
+		let token = this.input[this.position];
+		let value = token.value + token.trailing;
 
 		this.advance(1);
 		while (!this.done) {
-			const token = this.tokens[this.position];
-			const isFlagOrOption = this.registeredOptions.has(token.raw) || this.registeredFlags.has(token.raw);
-			// If the token's value is a flag or option, the option value ends here.
-			if (isFlagOrOption) return buffer;
+			token = this.input[this.position];
+			// The option's value ends when it reaches another flag or option.
+			if (this.registeredFlags.has(token.raw) || this.registeredOptions.has(token.raw)) break;
 
-			// Otherwise, add the token's value to the buffer, and move on to the next token.
-			buffer += firstToken.raw + firstToken.trailing;
+			value += token.value + token.trailing;
 			this.advance(1);
 		}
 
-		return buffer;
+		const values = output.options.get(optionId);
+		if (values) values.push(value);
+		else output.options.set(optionId, [value]);
+
+		return true;
+	}
+
+	private parseFlag(output: ParserOutput) {
+		const token = this.input[this.position];
+		const flagId = this.registeredFlags.get(token.raw);
+		if (!flagId) return false;
+
+		output.flags.add(flagId);
+		this.advance(1);
+		return true;
 	}
 }

@@ -6,6 +6,8 @@
  * Copyright (c) 2020 1Computer.
  */
 
+import type { Token } from '../Token';
+
 /**
  * Output of the parser. Includes several convenience methods for accessing data
  * from it.
@@ -22,7 +24,7 @@ export class ParserOutput {
 	public readonly options = new Map<string, string[]>();
 
 	/**
-	 * A list of positional arguments, in the order they were provided.
+	 * A list of ordered arguments, in the order they were provided.
 	 */
-	public readonly ordered: string[] = [];
+	public readonly ordered: Token[] = [];
 }
