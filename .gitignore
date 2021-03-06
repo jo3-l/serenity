@@ -19,3 +19,6 @@ coverage
 
 # Sensitive configuration files
 src/config.yml
+
+# WIP files
+.github/workflows/build-docker-image.yml
