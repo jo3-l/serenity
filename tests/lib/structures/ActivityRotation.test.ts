@@ -42,7 +42,7 @@ const clientMock = {
 };
 
 const activityRotation = new ActivityRotation((clientMock as unknown) as Client, {
-	activitySets: activitySets,
+	activitySets,
 	activityRotationInterval: 30 * Time.Minute,
 });
 
@@ -62,7 +62,6 @@ beforeEach(() => {
 describe('ActivityRotation#start()', () => {
 	it('should set an interval', () => {
 		activityRotation.start();
-
 		expect(clientMock.setInterval).toHaveBeenCalledTimes(1);
 	});
 

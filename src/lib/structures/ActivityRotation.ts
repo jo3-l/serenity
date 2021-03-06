@@ -75,7 +75,9 @@ export class ActivityRotation {
 		void this.client
 			.user!.setActivity(activity)
 			.then(() => logger.info('Set next activity in activity rotation'))
-			.catch((error) => logger.error(error, 'Failed setting next activity for activity rotation'));
+			.catch(
+				/* istanbul ignore next */ (error) => logger.error(error, 'Failed setting next activity for activity rotation'),
+			);
 	}
 
 	private getNextActivity() {
