@@ -13,7 +13,7 @@ import { ParserOutput } from './ParserOutput';
  * Separates a list of tokens into flags, option flags, and ordered arguments.
  */
 export abstract class Parser
-	implements IterableIterator<ParserOutput>, Iterator<ParserOutput, null, ParserOutput | undefined> {
+	implements IterableIterator<ParserOutput>, Iterator<ParserOutput, undefined, ParserOutput | undefined> {
 	protected input: Token[] = [];
 	protected position = 0;
 
@@ -66,7 +66,7 @@ export abstract class Parser
 	 * @param output - Output to mutate.
 	 * @returns An iterator result containing parser output.
 	 */
-	public abstract next(output?: ParserOutput): IteratorResult<ParserOutput>;
+	public abstract next(output?: ParserOutput): IteratorResult<ParserOutput, undefined>;
 
 	public [Symbol.iterator]() {
 		return this;

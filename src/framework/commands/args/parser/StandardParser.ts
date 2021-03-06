@@ -68,7 +68,7 @@ export class StandardParser extends Parser {
 		return this;
 	}
 
-	public next(output = new ParserOutput()): IteratorResult<ParserOutput> {
+	public next(output = new ParserOutput()): IteratorResult<ParserOutput, undefined> {
 		if (this.done) return { done: true, value: undefined };
 
 		let ok = this.parseOption(output);
