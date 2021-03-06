@@ -28,8 +28,15 @@ import { ParserOutput } from './ParserOutput';
  * ```
  */
 export class VariadicFlagParser extends Parser {
-	private readonly registeredFlags = new Map<string, string>();
-	private readonly registeredOptions = new Map<string, string>();
+	/**
+	 * Registered flag prefixes, mapped to their IDs.
+	 */
+	public readonly registeredFlags = new Map<string, string>();
+
+	/**
+	 * Registered option prefixes, mapped to their IDs.
+	 */
+	public readonly registeredOptions = new Map<string, string>();
 
 	/**
 	 * Registers flags to be used during parsing.
