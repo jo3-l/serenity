@@ -102,6 +102,8 @@ export class VariadicFlagParser extends Parser {
 			this.advance(1);
 		}
 
+		value = value.trimEnd();
+
 		const values = output.options.get(optionId);
 		if (values) values.push(value);
 		else output.options.set(optionId, [value]);
