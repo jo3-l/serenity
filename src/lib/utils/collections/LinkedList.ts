@@ -43,19 +43,18 @@ export class LinkedListIterator<T> implements IterableIterator<T> {
 		return this.currentNode === undefined;
 	}
 
-	public next() {
+	public next(): IteratorResult<T, undefined> {
 		// If the current node is invalid, then `currentNode` is actually the
 		// next node.
 		if (!this.canOperateOnCurrentElement) {
 			// If the list was empty, throw an error.
-			if (!this.currentNode) return { done: true as const, value: undefined };
+			if (!this.currentNode) return { done: true, value: undefined };
 			this.canOperateOnCurrentElement = true;
 			return { done: false, value: this.currentNode.value };
 		}
 
-		// Get the next node.
 		const nextNode = this.currentNode?.next;
-		if (!nextNode) return { done: true as const, value: undefined };
+		if (!nextNode) return { done: true, value: undefined };
 
 		this.previousNode = this.currentNode;
 		this.currentNode = nextNode;
@@ -77,8 +76,8 @@ export class LinkedListIterator<T> implements IterableIterator<T> {
 			throw new Error('Tried to call remove() when there was no current element to operate on.');
 		}
 
-		// This assertion is safe as `currentNode` will always be defined if
-		// `previousNode` is defined.
+		// This assertion is safe as `currentNode` will always be defined if we
+		// can operate on the current element.
 		if (this.previousNode) this.previousNode.next = this.currentNode!.next;
 		else this.linkedList.shift();
 	}
@@ -95,8 +94,8 @@ export class LinkedListIterator<T> implements IterableIterator<T> {
 			throw new Error('Tried to call replace() when there was no current element to operate on.');
 		}
 
-		// This assertion is safe because `currentNode` will always be defined
-		// if this isn't the first iteration.
+		// This assertion is safe because `currentNode` if we can operate on the
+		// current element.
 		this.currentNode!.value = value;
 	}
 
@@ -110,21 +109,15 @@ export class LinkedListIterator<T> implements IterableIterator<T> {
 	public insert(value: T) {
 		this.canOperateOnCurrentElement = true;
 
-		// If the input list is empty...
 		if (!this.currentNode) {
-			// Then call unshift() on the underlying list.
 			this.linkedList.unshift(value);
 			this.currentNode = this.linkedList.head;
 			return;
 		}
 
-		// Otherwise, create a new node...
 		const node = new Node(value);
-		// Link it to the next node...
 		node.next = this.currentNode.next;
-		// And link the new node with the current node.
 		this.currentNode.next = node;
-		// Finally, set the current node to the new node.
 		this.previousNode = this.currentNode;
 		this.currentNode = node;
 	}
@@ -149,12 +142,8 @@ export class LinkedList<T> implements Iterable<Node<T>> {
 	 * @param value - Value to use.
 	 */
 	public unshift(value: T) {
-		// Create a new node.
 		const node = new Node(value);
-		// Then, set its next node to the current head node.
-		const prevHead = this.head;
-		node.next = prevHead;
-		// Finally, set the head node to the new node.
+		node.next = this.head;
 		this.head = node;
 	}
 
@@ -186,7 +175,7 @@ export class LinkedList<T> implements Iterable<Node<T>> {
 	}
 
 	/**
-	 * Converts this linked list to an array representing its values.
+	 * Converts this linked list to an array of its values.
 	 */
 	public array() {
 		const values: T[] = [];
@@ -201,7 +190,7 @@ export class LinkedList<T> implements Iterable<Node<T>> {
 	/**
 	 * Returns a `LinkedListIterator` over the elements of this linked list.
 	 */
-	public listIterator(): LinkedListIterator<T> {
+	public iter(): LinkedListIterator<T> {
 		return new LinkedListIterator(this);
 	}
 }

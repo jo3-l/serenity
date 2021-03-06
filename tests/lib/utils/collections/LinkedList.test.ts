@@ -109,7 +109,7 @@ describe('LinkedListIterator', () => {
 		it('should be true for empty lists', () => {
 			const list = new LinkedList<number>();
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 
 			expect(iterator.done).toBeTruthy();
 		});
@@ -119,7 +119,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(2);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 
 			expect(iterator.done).toBeFalsy();
 		});
@@ -131,7 +131,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(2);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 
 			expect(iterator.next().value).toBe(1);
 			expect(iterator.next().value).toBe(2);
@@ -139,7 +139,7 @@ describe('LinkedListIterator', () => {
 
 		it('should return done: true for empty lists', () => {
 			const list = new LinkedList<number>();
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 
 			expect(iterator.next().done).toBeTruthy();
 		});
@@ -148,7 +148,7 @@ describe('LinkedListIterator', () => {
 			const list = new LinkedList<number>();
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 			iterator.next();
 
 			expect(iterator.next().done).toBeTruthy();
@@ -160,7 +160,7 @@ describe('LinkedListIterator', () => {
 			const list = new LinkedList<number>();
 			list.unshift(2);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 
 			expect(() => iterator.skip(2)).toThrow();
 		});
@@ -170,7 +170,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(2);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 			iterator.skip(1);
 
 			expect(iterator.next().value).toBe(2);
@@ -183,7 +183,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(2);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 
 			expect(() => iterator.remove()).toThrow();
 		});
@@ -193,7 +193,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(2);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 			iterator.next();
 			iterator.remove();
 
@@ -206,7 +206,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(2);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 			iterator.next();
 			iterator.next();
 			iterator.remove();
@@ -221,7 +221,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(2);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 
 			expect(() => iterator.replace(2)).toThrow();
 		});
@@ -231,7 +231,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(4);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 			iterator.next();
 			iterator.replace(2);
 
@@ -243,7 +243,7 @@ describe('LinkedListIterator', () => {
 		it('should call unshift() on the linked list if it is empty', () => {
 			const list = new LinkedList<number>();
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 			iterator.insert(1);
 
 			expect(list.array()).toStrictEqual([1]);
@@ -254,7 +254,7 @@ describe('LinkedListIterator', () => {
 			list.unshift(4);
 			list.unshift(1);
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 			iterator.next();
 			iterator.insert(2);
 
@@ -264,7 +264,7 @@ describe('LinkedListIterator', () => {
 		it('should set the current element', () => {
 			const list = new LinkedList<number>();
 
-			const iterator = list.listIterator();
+			const iterator = list.iter();
 			iterator.insert(1);
 			iterator.insert(2);
 
@@ -277,7 +277,7 @@ describe('LinkedListIterator', () => {
 		list.unshift(4);
 		list.unshift(1);
 
-		const iterator = list.listIterator()[Symbol.iterator]();
+		const iterator = list.iter()[Symbol.iterator]();
 
 		expect(iterator.next().value).toBe(1);
 		expect(iterator.next().value).toBe(4);
