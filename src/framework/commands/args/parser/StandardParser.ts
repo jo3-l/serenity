@@ -11,16 +11,25 @@ import { Parser } from './Parser';
 import { ParserOutput } from './ParserOutput';
 
 /**
- * A standard parser intended to be used for most cases.
+ * A parser that parses tokens in a relatively standard manner, intended to be
+ * used for most cases. It supports flags, options, and ordered arguments.
  *
- * Given a set of flags and options, it parses the list of tokens according to
- * the following general rules:
+ * @example
+ * ```typescript
+ * const tokens = new Lexer()
+ * 	.setInput('foo --option optionValue --flag bar')
+ * 	.lex();
  *
- * - If a token's raw value is a flag, then add it to the set of flags.
- * - If a token's raw value is an option prefix, then append the next token's
- *   value to the option's values.
- *  - If the option prefix is the last token, then it is discarded.
- * - Otherwise, the token is added to the list of ordered arguments.
+ * const output = new StandardParser()
+ * 	.registerOptions([{ id: 'option', prefixes: ['--option] }])
+ * 	.registerFlags([{ id: 'flag', prefixes: ['--flag] }])
+ * 	.setInput(tokens)
+ * 	.parse();
+ *
+ * joinTokens(output.ordered); // foo bar
+ * output.flags.has('flag'); // true
+ * output.options.get('option'); // ['optionValue']
+ * ```
  */
 export class StandardParser extends Parser {
 	/**

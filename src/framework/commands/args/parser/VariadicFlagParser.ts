@@ -3,18 +3,29 @@ import { Parser } from './Parser';
 import { ParserOutput } from './ParserOutput';
 
 /**
- * A parser made to handle input that is made up of only flags and options.
- * Example:
+ * A parser made to handle input that is made up of only flags and options. It
+ * allows you to specify multi-word values for option flags without using
+ * quotes (for example, given `--option my option value`, `option` would have
+ * the value `my option value` instead of just `my`). Note that a major caveat
+ * is that it does not parse ordered arguments.
  *
- * `--option hello world --foo bar baz`
+ * @example
+ * ```typescript
+ * const tokens = new Lexer()
+ * 	.setInput('--option hello world --otherOption foo bar')
+ * 	.lex();
  *
- * would result in the `--option` flag having a value of `hello world` and
- * `--foo` flag having a value of `bar baz`, instead of `hello` and `bar`
- * respectively (the result from using the `StandardParser`).
+ * const output = new VariadicFlagParser()
+ * 	.registerOptions([
+ * 		{ id: 'option', prefixes: ['--option] },
+ * 		{ id: 'otherOption', prefixes: ['--otherOption'] },
+ * 	])
+ * 	.setInput(tokens)
+ * 	.parse();
  *
- * In other words, this allows you to specify multi-word values for option flags
- * without using quotes, but does so at the cost of not parsing positional
- * arguments.
+ * output.options.get('option'); // ['hello world']
+ * output.options.get('otherOption'); // ['foo bar']
+ * ```
  */
 export class VariadicFlagParser extends Parser {
 	private readonly registeredFlags = new Map<string, string>();
