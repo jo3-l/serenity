@@ -209,3 +209,65 @@ describe('StandardParser#parse()', () => {
 		});
 	});
 });
+
+describe('StandardParser#next()', () => {
+	it('should create and return a new output if none is given', () => {
+		const tokens = new Lexer().setInput('simple text here --flag --option foo').lex();
+		const parser = new StandardParser()
+			.registerFlags([{ id: 'flag', prefixes: ['--flag'] }])
+			.registerOptions([{ id: 'option', prefixes: ['--option'] }])
+			.setInput(tokens);
+
+		expect(parser.next().value).toMatchObject({
+			ordered: [tokens[0]],
+			flags: new Set(),
+			options: new Map(),
+		});
+		expect(parser.next().value).toMatchObject({
+			ordered: [tokens[1]],
+			flags: new Set(),
+			options: new Map(),
+		});
+		expect(parser.next().value).toMatchObject({
+			ordered: [tokens[2]],
+			flags: new Set(),
+			options: new Map(),
+		});
+		expect(parser.next().value).toMatchObject({
+			ordered: [],
+			flags: new Set(['flag']),
+			options: new Map(),
+		});
+		expect(parser.next().value).toMatchObject({
+			ordered: [],
+			flags: new Set(),
+			options: new Map([['option', ['foo']]]),
+		});
+	});
+
+	it('should mutate the output object passed', () => {
+		const tokens = new Lexer().setInput('foo bar').lex();
+		const parser = new StandardParser().setInput(tokens);
+		const result = parser.next();
+
+		expect(result.value).toMatchObject({
+			ordered: [tokens[0]],
+			flags: new Set(),
+			options: new Map(),
+		});
+		expect(parser.next(result.value).value).toMatchObject({
+			ordered: tokens,
+			flags: new Set(),
+			options: new Map(),
+		});
+	});
+
+	it('should return done: true if finished', () => {
+		const tokens = new Lexer().setInput('foo bar').lex();
+		const parser = new StandardParser().setInput(tokens);
+		parser.next();
+		parser.next();
+
+		expect(parser.next().done).toBeTruthy();
+	});
+});
