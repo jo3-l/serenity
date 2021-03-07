@@ -8,8 +8,8 @@ export interface FlagMetadata {
 	id: string;
 
 	/**
-	 * The prefixes of this flag. For example, given that this is `['--help',
-	 * '-h']`, both `-h` and `--help` would be recognized as flags of this type.
+	 * The prefixes of this flag. For example, if there were `['--help', -h']`
+	 * then both `-h` and `--help` would be recognized as flags of this type.
 	 */
 	prefixes: string[];
 }
