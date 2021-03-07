@@ -43,10 +43,6 @@ export class ActivityRotation {
 	/**
 	 * Starts this activity rotation, which will immediately poll the next
 	 * activity and set it.
-	 *
-	 * @remarks
-	 * This method is idempotent and is thus safe to call even if the activity
-	 * rotation is already running.
 	 */
 	public start() {
 		if (this._isRunning) return;
@@ -57,10 +53,6 @@ export class ActivityRotation {
 
 	/**
 	 * Stops this activity rotation, causing new activities to no longer be polled.
-	 *
-	 * @remarks
-	 * This method is idempotent and is thus safe to call even if the activity
-	 * rotation is already not running.
 	 */
 	public stop() {
 		if (!this._isRunning) return;
