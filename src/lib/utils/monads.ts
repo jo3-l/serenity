@@ -1,3 +1,5 @@
+import type { InferLiteral } from '#lib/types/shared';
+
 /**
  * Represents an empty value.
  */
@@ -24,7 +26,13 @@ export interface Some<T> {
  * @param value - Value to encapsulate.
  * @returns The encapsulated value.
  */
-export const some = <T>(value: T): Some<T> => ({ exists: true, value });
+export function some<T extends InferLiteral[]>(value: [...T]): Some<[...T]>;
+export function some<V extends InferLiteral, K extends PropertyKey, T extends { [S in K]: V }>(value: T): Some<T>;
+export function some<T extends InferLiteral>(value: T): Some<T>;
+export function some<T>(value: T): Some<T>;
+export function some<T>(value: T): Some<T> {
+	return { exists: true, value };
+}
 
 /**
  * An optional value.
@@ -45,7 +53,13 @@ export interface Ok<T> {
  * @param value - Value of the computation.
  * @returns The resulting Ok.
  */
-export const ok = <T>(value: T): Ok<T> => ({ ok: true, value });
+export function ok<T extends InferLiteral[]>(value: [...T]): Ok<[...T]>;
+export function ok<V extends InferLiteral, K extends PropertyKey, R extends { [S in K]: V }>(value: R): Ok<R>;
+export function ok<T extends InferLiteral>(value: T): Ok<T>;
+export function ok<T>(value: T): Ok<T>;
+export function ok<T>(value: T): Ok<T> {
+	return { ok: true, value };
+}
 
 /**
  * Represents a failed computation, containing an error value.
@@ -61,7 +75,13 @@ export interface Err<E> {
  * @param error - Error value to use.
  * @returns The resulting Err.
  */
-export const err = <E>(error: E): Err<E> => ({ ok: false, error });
+export function err<E extends InferLiteral[]>(error: [...E]): Err<[...E]>;
+export function err<V extends InferLiteral, K extends PropertyKey, E extends { [S in K]: V }>(error: E): Err<E>;
+export function err<E extends InferLiteral>(error: E): Err<E>;
+export function err<E>(error: E): Err<E>;
+export function err<E>(error: E): Err<E> {
+	return { ok: false, error };
+}
 
 /**
  * An Err with a value of `undefined`.
