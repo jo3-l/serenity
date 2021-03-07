@@ -65,7 +65,7 @@ export class ParserOutputWrapper {
 	 * end.
 	 */
 	public get positionFromEnd() {
-		return this.state.position;
+		return this.state.positionFromEnd;
 	}
 
 	/**
@@ -96,7 +96,7 @@ export class ParserOutputWrapper {
 		if (!values?.length) return undefined;
 
 		// @ts-expect-error - TypeScript cannot infer that this is of the correct return type :(
-		return all ? values[values.length - 1] : values;
+		return all ? values : values[values.length - 1];
 	}
 
 	/**
@@ -113,12 +113,12 @@ export class ParserOutputWrapper {
 			while (this.state.usedIndices.has(this.state.positionFromEnd)) {
 				--this.state.positionFromEnd;
 			}
-			this.state.usedIndices.add(this.state.positionFromEnd);
+			this.markAsUsed(this.state.positionFromEnd);
 			return this.parserOutput.ordered[this.state.positionFromEnd--].value;
 		}
 
 		const token = this.nextToken()!;
-		this.state.usedIndices.add(this.state.position);
+		this.markAsUsed();
 		++this.state.position;
 		return token.value;
 	}
@@ -143,7 +143,7 @@ export class ParserOutputWrapper {
 			for (let i = startPosition; i >= 0; i--) {
 				if (this.state.usedIndices.has(i)) continue;
 
-				this.state.usedIndices.add(i);
+				this.markAsUsed(i);
 				tokens.push(this.parserOutput.ordered[i]);
 				if (tokens.length === limit) break;
 			}
@@ -163,7 +163,7 @@ export class ParserOutputWrapper {
 		for (let i = startPosition; i < this.length; i++) {
 			if (this.state.usedIndices.has(i)) continue;
 
-			this.state.usedIndices.add(i);
+			this.markAsUsed(i);
 			tokens.push(this.parserOutput.ordered[i]);
 			if (tokens.length === limit) break;
 		}
@@ -189,7 +189,7 @@ export class ParserOutputWrapper {
 		const result = fn(token.value);
 
 		if (alwaysUse || result.exists) {
-			this.state.usedIndices.add(this.state.position);
+			this.markAsUsed();
 			++this.state.position;
 		}
 		return result;
@@ -212,7 +212,7 @@ export class ParserOutputWrapper {
 		const result = await fn(token.value);
 
 		if (alwaysUse || result.exists) {
-			this.state.usedIndices.add(this.state.position);
+			this.markAsUsed();
 			++this.state.position;
 		}
 		return result;
@@ -235,7 +235,7 @@ export class ParserOutputWrapper {
 		const result = fn(token.value);
 
 		if (alwaysUse || result.ok) {
-			this.state.usedIndices.add(this.state.position);
+			this.markAsUsed();
 			++this.state.position;
 		}
 		return result;
@@ -258,7 +258,7 @@ export class ParserOutputWrapper {
 		const result = await fn(token.value);
 
 		if (alwaysUse || result.ok) {
-			this.state.usedIndices.add(this.state.position);
+			this.markAsUsed();
 			++this.state.position;
 		}
 		return result;
@@ -285,7 +285,7 @@ export class ParserOutputWrapper {
 			const token = this.parserOutput.ordered[i];
 			const result = fn(token.value);
 
-			if (alwaysUse || result.exists) this.state.usedIndices.add(i);
+			if (alwaysUse || result.exists) this.markAsUsed(i);
 			if (!result.exists) return mapped;
 
 			mapped.push(result.value);
@@ -316,7 +316,7 @@ export class ParserOutputWrapper {
 			const token = this.parserOutput.ordered[i];
 			const result = await fn(token.value);
 
-			if (alwaysUse || result.exists) this.state.usedIndices.add(i);
+			if (alwaysUse || result.exists) this.markAsUsed(i);
 			if (!result.exists) return mapped;
 
 			mapped.push(result.value);
@@ -347,7 +347,7 @@ export class ParserOutputWrapper {
 			const token = this.parserOutput.ordered[i];
 			const result = fn(token.value);
 
-			if (alwaysUse || result.exists) this.state.usedIndices.add(i);
+			if (alwaysUse || result.exists) this.markAsUsed(i);
 			if (result.exists) return result;
 		}
 
@@ -374,7 +374,7 @@ export class ParserOutputWrapper {
 			const token = this.parserOutput.ordered[i];
 			const result = await fn(token.value);
 
-			if (alwaysUse || result.exists) this.state.usedIndices.add(i);
+			if (alwaysUse || result.exists) this.markAsUsed(i);
 			if (result.exists) return result;
 		}
 
@@ -404,7 +404,7 @@ export class ParserOutputWrapper {
 			const token = this.parserOutput.ordered[i];
 			const result = fn(token.value);
 
-			if (alwaysUse || result.ok) this.state.usedIndices.add(i);
+			if (alwaysUse || result.ok) this.markAsUsed(i);
 			if (result.ok) return result;
 
 			errors.push(result.error);
@@ -435,7 +435,7 @@ export class ParserOutputWrapper {
 			const token = this.parserOutput.ordered[i];
 			const result = await fn(token.value);
 
-			if (alwaysUse || result.ok) this.state.usedIndices.add(i);
+			if (alwaysUse || result.ok) this.markAsUsed(i);
 			if (result.ok) return result;
 
 			errors.push(result.error);
@@ -465,7 +465,7 @@ export class ParserOutputWrapper {
 			const token = this.parserOutput.ordered[i];
 			const result = fn(token.value);
 
-			if (alwaysUse || result.exists) this.state.usedIndices.add(i);
+			if (alwaysUse || result.exists) this.markAsUsed(i);
 			if (result.exists) return result;
 		}
 
@@ -492,11 +492,21 @@ export class ParserOutputWrapper {
 			const token = this.parserOutput.ordered[i];
 			const result = await fn(token.value);
 
-			if (alwaysUse || result.exists) this.state.usedIndices.add(i);
+			if (alwaysUse || result.exists) this.markAsUsed(i);
 			if (result.exists) return result;
 		}
 
 		return none;
+	}
+
+	/**
+	 * Marks a position as used.
+	 *
+	 * @param position - Position to mark as used. Defaults to the current
+	 * position in the forward direction.
+	 */
+	public markAsUsed(position = this.state.position) {
+		this.state.usedIndices.add(position);
 	}
 
 	/**
