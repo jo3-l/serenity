@@ -1,7 +1,7 @@
 # `#framework`
 
 This is the Serenity framework, an extremely flexible and powerful framework for Discord bots.
-It's currently private right now (just used for this bot) but I hope to polish it up and release it to the public someday.
+Though it's not currently easily available for use in other projects, I hope to polish it up and release it someday.
 
 # Acknowledgements
 
