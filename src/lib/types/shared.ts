@@ -51,4 +51,4 @@ type UniqueSymbol = typeof v;
  * in a function overload to catch the `never` type. See the example attached to
  * `InferLiteral` for details.
  */
-export type ImpossibleType = [[never, UniqueSymbol, Record<UniqueSymbol, [[never]]>]];
+export type ImpossibleType = [[134596 & { [v]: 45677 }, UniqueSymbol, Record<UniqueSymbol, [[never] & { [v]: void }]>]];
