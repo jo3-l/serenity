@@ -12,5 +12,3 @@ function getVersion(): string {
  * Current version of the bot, as defined in `package.json`.
  */
 export const VERSION = getVersion();
-
-console.log(VERSION);
