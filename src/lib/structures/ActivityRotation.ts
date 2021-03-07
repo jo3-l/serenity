@@ -20,7 +20,7 @@ export class ActivityRotation {
 	 * Creates a new ActivityRotation.
 	 *
 	 * @remarks
-	 * The instance created will be paused by default
+	 * The instance created will be paused by default.
 	 *
 	 * @param client - Client to use.
 	 * @param options - Options for the ActivityRotation.
