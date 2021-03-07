@@ -54,7 +54,6 @@ export interface Ok<T> {
  * @param value - Value of the computation.
  * @returns The resulting Ok.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ok(value: ImpossibleType): never;
 export function ok<T extends InferLiteral[]>(value: [...T]): Ok<[...T]>;
 export function ok<V extends InferLiteral, K extends PropertyKey, R extends { [S in K]: V }>(value: R): Ok<R>;
