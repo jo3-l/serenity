@@ -12,6 +12,7 @@
  *  value: T;
  * }
  *
+ * function box(value: ImpossibleType): Box<never>;
  * function box<T extends InferLiteral[]>(value: [...T]): Box<[...T]>
  * function box<V extends InferLiteral, K extends PropertyKey, T extends { [S in K]: V }>(value: M): Box<T>;
  * function box<T extends InferLiteral>(value: T): Box<T>;
@@ -40,3 +41,14 @@ export type InferLiteral =
 	| unknown[]
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	| {};
+
+declare const v: unique symbol;
+type UniqueSymbol = typeof v;
+
+/**
+ * An 'impossible' type that will never come up in normal code and is extremely
+ * hard to replicate. It is meant to be used in combination with `InferLiteral`
+ * in a function overload to catch the `never` type. See the example attached to
+ * `InferLiteral` for details.
+ */
+export type ImpossibleType = [[never, UniqueSymbol, Record<UniqueSymbol, [[never]]>]];

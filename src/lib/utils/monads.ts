@@ -1,4 +1,4 @@
-import type { InferLiteral } from '#lib/types/shared';
+import type { ImpossibleType, InferLiteral } from '#lib/types/shared';
 
 /**
  * Represents an empty value.
@@ -26,6 +26,7 @@ export interface Some<T> {
  * @param value - Value to encapsulate.
  * @returns The encapsulated value.
  */
+export function some(value: ImpossibleType): Some<never>;
 export function some<T extends InferLiteral[]>(value: [...T]): Some<[...T]>;
 export function some<V extends InferLiteral, K extends PropertyKey, T extends { [S in K]: V }>(value: T): Some<T>;
 export function some<T extends InferLiteral>(value: T): Some<T>;
@@ -35,12 +36,12 @@ export function some<T>(value: T): Some<T> {
 }
 
 /**
- * An optional value.
+ * Represents an optional value.
  */
 export type Maybe<T> = Some<T> | None;
 
 /**
- * Represents a successful computation, containing a value.
+ * Represents a successful computation containing a value.
  */
 export interface Ok<T> {
 	ok: true;
@@ -53,6 +54,8 @@ export interface Ok<T> {
  * @param value - Value of the computation.
  * @returns The resulting Ok.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function ok(value: ImpossibleType): never;
 export function ok<T extends InferLiteral[]>(value: [...T]): Ok<[...T]>;
 export function ok<V extends InferLiteral, K extends PropertyKey, R extends { [S in K]: V }>(value: R): Ok<R>;
 export function ok<T extends InferLiteral>(value: T): Ok<T>;
@@ -62,7 +65,7 @@ export function ok<T>(value: T): Ok<T> {
 }
 
 /**
- * Represents a failed computation, containing an error value.
+ * Represents a failed computation containing an error value.
  */
 export interface Err<E> {
 	ok: false;
@@ -75,6 +78,7 @@ export interface Err<E> {
  * @param error - Error value to use.
  * @returns The resulting Err.
  */
+export function err(error: ImpossibleType): never;
 export function err<E extends InferLiteral[]>(error: [...E]): Err<[...E]>;
 export function err<V extends InferLiteral, K extends PropertyKey, E extends { [S in K]: V }>(error: E): Err<E>;
 export function err<E extends InferLiteral>(error: E): Err<E>;
