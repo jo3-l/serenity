@@ -5,7 +5,7 @@
  *
  * Copyright (c) 2020 1Computer.
  */
-import type { Token } from './Token';
+import type { Token } from './tokens';
 
 import { getCode, isWhiteSpace } from '@skyra/char';
 

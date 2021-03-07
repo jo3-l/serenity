@@ -1,9 +1,10 @@
 import { Lexer } from '#framework/commands/args/Lexer';
 import { Parser } from '#framework/commands/args/parser/Parser';
-import { ParserOutput } from '#framework/commands/args/parser/ParserOutput';
+import type { ParserOutput } from '#framework/commands/args/parser/ParserOutput';
+import { emptyOutput } from '#framework/commands/args/parser/ParserOutput';
 
 class ParserImpl extends Parser {
-	public next(output = new ParserOutput()): IteratorResult<ParserOutput, undefined> {
+	public next(output = emptyOutput()): IteratorResult<ParserOutput, undefined> {
 		if (this.done) return { done: true, value: undefined };
 		output.ordered.push(this.input[this.position]);
 		this.advance(1);
@@ -16,7 +17,7 @@ describe('Parser#setInput()', () => {
 		const tokens = new Lexer().setInput('hello world').lex();
 		const parser = new ParserImpl().setInput(tokens);
 
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [tokens[0]],
 			flags: new Set(),
 			options: new Map(),
@@ -31,7 +32,7 @@ describe('Parser#setInput()', () => {
 		const tokens1 = new Lexer().setInput('foo bar').lex();
 		parser.setInput(tokens1);
 
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [tokens1[0]],
 			flags: new Set(),
 			options: new Map(),
@@ -56,7 +57,7 @@ describe('Parser#reset()', () => {
 		const tokens = new Lexer().setInput('hello world').lex();
 		const parser = new ParserImpl().setInput(tokens);
 
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [tokens[0]],
 			flags: new Set(),
 			options: new Map(),
@@ -64,7 +65,7 @@ describe('Parser#reset()', () => {
 
 		parser.reset();
 
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [tokens[0]],
 			flags: new Set(),
 			options: new Map(),
@@ -77,7 +78,7 @@ describe('Parser#parse()', () => {
 		const tokens = new Lexer().setInput('hello world').lex();
 		const parser = new ParserImpl().setInput(tokens);
 
-		expect(parser.parse()).toMatchObject({
+		expect(parser.parse()).toStrictEqual({
 			ordered: tokens,
 			flags: new Set(),
 			options: new Map(),
@@ -90,12 +91,12 @@ it('should be iterable', () => {
 	const parser = new ParserImpl().setInput(tokens);
 	const iterator = parser[Symbol.iterator]();
 
-	expect(iterator.next().value).toMatchObject({
+	expect(iterator.next().value).toStrictEqual({
 		ordered: [tokens[0]],
 		flags: new Set(),
 		options: new Map(),
 	});
-	expect(iterator.next().value).toMatchObject({
+	expect(iterator.next().value).toStrictEqual({
 		ordered: [tokens[1]],
 		flags: new Set(),
 		options: new Map(),

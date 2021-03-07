@@ -6,8 +6,9 @@
  * Copyright (c) 2020 1Computer.
  */
 
-import type { Token } from '../Token';
-import { ParserOutput } from './ParserOutput';
+import type { Token } from '../tokens';
+import type { ParserOutput } from './ParserOutput';
+import { emptyOutput } from './ParserOutput';
 
 /**
  * Separates a list of tokens into flags, option flags, and ordered arguments.
@@ -52,7 +53,7 @@ export abstract class Parser
 	 * @returns The parser output.
 	 */
 	public parse() {
-		const output = new ParserOutput();
+		const output = emptyOutput();
 		let result = this.next(output);
 		while (!result.done) result = this.next(output);
 

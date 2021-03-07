@@ -8,7 +8,8 @@
 
 import type { FlagMetadata } from './FlagMetadata';
 import { Parser } from './Parser';
-import { ParserOutput } from './ParserOutput';
+import type { ParserOutput } from './ParserOutput';
+import { emptyOutput } from './ParserOutput';
 
 /**
  * A parser that parses tokens in a relatively standard manner, intended to be
@@ -68,7 +69,7 @@ export class StandardParser extends Parser {
 		return this;
 	}
 
-	public next(output = new ParserOutput()): IteratorResult<ParserOutput, undefined> {
+	public next(output = emptyOutput()): IteratorResult<ParserOutput, undefined> {
 		if (this.done) return { done: true, value: undefined };
 
 		let ok = this.parseOption(output);

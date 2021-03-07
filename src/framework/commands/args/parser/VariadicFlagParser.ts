@@ -1,6 +1,7 @@
 import type { FlagMetadata } from './FlagMetadata';
 import { Parser } from './Parser';
-import { ParserOutput } from './ParserOutput';
+import type { ParserOutput } from './ParserOutput';
+import { emptyOutput } from './ParserOutput';
 
 /**
  * A parser made to handle input that is made up of only flags and options. It
@@ -64,7 +65,7 @@ export class VariadicFlagParser extends Parser {
 		return this;
 	}
 
-	public next(output = new ParserOutput()): IteratorResult<ParserOutput, undefined> {
+	public next(output = emptyOutput()): IteratorResult<ParserOutput, undefined> {
 		if (this.done) return { done: true, value: undefined };
 
 		let ok = this.parseOption(output);

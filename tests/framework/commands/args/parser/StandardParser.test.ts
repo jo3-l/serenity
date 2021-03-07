@@ -39,7 +39,7 @@ describe('StandardParser#parse()', () => {
 	it('should parse normal phrases', () => {
 		const tokens = new Lexer().setInput('simple text here').lex();
 		const output = new StandardParser().setInput(tokens).parse();
-		expect(output).toMatchObject({
+		expect(output).toStrictEqual({
 			ordered: tokens,
 			flags: new Set(),
 			options: new Map(),
@@ -60,7 +60,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0], tokens[1]],
 				flags: new Set(['here']),
 				options: new Map(),
@@ -77,7 +77,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0], tokens[1]],
 				flags: new Set(['here']),
 				options: new Map(),
@@ -94,7 +94,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0]],
 				flags: new Set(['text', 'here']),
 				options: new Map(),
@@ -108,7 +108,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0]],
 				flags: new Set(['text']),
 				options: new Map(),
@@ -130,7 +130,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0], tokens[1], tokens[2]],
 				flags: new Set(),
 				options: new Map([['here', ['hello']]]),
@@ -147,7 +147,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0], tokens[1], tokens[2]],
 				flags: new Set(),
 				options: new Map([['here', ['why']]]),
@@ -161,7 +161,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0], tokens[1]],
 				flags: new Set(),
 				options: new Map(),
@@ -178,7 +178,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0]],
 				flags: new Set(),
 				options: new Map([
@@ -198,7 +198,7 @@ describe('StandardParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [tokens[0]],
 				flags: new Set(),
 				options: new Map([
@@ -218,27 +218,27 @@ describe('StandardParser#next()', () => {
 			.registerOptions([{ id: 'option', prefixes: ['--option'] }])
 			.setInput(tokens);
 
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [tokens[0]],
 			flags: new Set(),
 			options: new Map(),
 		});
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [tokens[1]],
 			flags: new Set(),
 			options: new Map(),
 		});
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [tokens[2]],
 			flags: new Set(),
 			options: new Map(),
 		});
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [],
 			flags: new Set(['flag']),
 			options: new Map(),
 		});
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [],
 			flags: new Set(),
 			options: new Map([['option', ['foo']]]),
@@ -250,12 +250,12 @@ describe('StandardParser#next()', () => {
 		const parser = new StandardParser().setInput(tokens);
 		const result = parser.next();
 
-		expect(result.value).toMatchObject({
+		expect(result.value).toStrictEqual({
 			ordered: [tokens[0]],
 			flags: new Set(),
 			options: new Map(),
 		});
-		expect(parser.next(result.value).value).toMatchObject({
+		expect(parser.next(result.value).value).toStrictEqual({
 			ordered: tokens,
 			flags: new Set(),
 			options: new Map(),

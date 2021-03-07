@@ -40,7 +40,7 @@ describe('VariadicFlagParser#parse()', () => {
 		const tokens = new Lexer().setInput('foo bar').lex();
 		const output = new VariadicFlagParser().setInput(tokens).parse();
 
-		expect(output).toMatchObject({
+		expect(output).toStrictEqual({
 			ordered: [],
 			flags: new Set(),
 			options: new Map(),
@@ -61,7 +61,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(['here']),
 				options: new Map(),
@@ -78,7 +78,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(['here']),
 				options: new Map(),
@@ -95,7 +95,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(['text', 'here']),
 				options: new Map(),
@@ -109,7 +109,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(['text']),
 				options: new Map(),
@@ -131,7 +131,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(),
 				options: new Map([['here', ['hello']]]),
@@ -148,7 +148,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(),
 				options: new Map([['here', ['why']]]),
@@ -162,7 +162,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(),
 				options: new Map(),
@@ -183,7 +183,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(['flag']),
 				options: new Map([
@@ -200,7 +200,7 @@ describe('VariadicFlagParser#parse()', () => {
 				.setInput(tokens)
 				.parse();
 
-			expect(output).toMatchObject({
+			expect(output).toStrictEqual({
 				ordered: [],
 				flags: new Set(),
 				options: new Map([['option', ['hello world', 'foo bar']]]),
@@ -217,12 +217,12 @@ describe('VariadicFlagParser#next()', () => {
 			.registerOptions([{ id: 'option', prefixes: ['--option'] }])
 			.setInput(tokens);
 
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [],
 			flags: new Set(['flag']),
 			options: new Map(),
 		});
-		expect(parser.next().value).toMatchObject({
+		expect(parser.next().value).toStrictEqual({
 			ordered: [],
 			flags: new Set(),
 			options: new Map([['option', ['foo bar']]]),
@@ -237,12 +237,12 @@ describe('VariadicFlagParser#next()', () => {
 			.setInput(tokens);
 		const result = parser.next();
 
-		expect(result.value).toMatchObject({
+		expect(result.value).toStrictEqual({
 			ordered: [],
 			flags: new Set(['flag']),
 			options: new Map(),
 		});
-		expect(parser.next(result.value).value).toMatchObject({
+		expect(parser.next(result.value).value).toStrictEqual({
 			ordered: [],
 			flags: new Set(['flag']),
 			options: new Map([['option', ['foo bar']]]),

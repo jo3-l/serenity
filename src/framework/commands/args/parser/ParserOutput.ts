@@ -6,25 +6,29 @@
  * Copyright (c) 2020 1Computer.
  */
 
-import type { Token } from '../Token';
+import type { Token } from '../tokens';
 
 /**
- * Output of the parser. Includes several convenience methods for accessing data
- * from it.
+ * Output of the parser.
  */
-export class ParserOutput {
+export interface ParserOutput {
+	/**
+	 * A list of ordered arguments, in the order they were provided.
+	 */
+	ordered: Token[];
+
 	/**
 	 * The parsed options.
 	 */
-	public readonly flags = new Set<string>();
+	flags: Set<string>;
 
 	/**
 	 * The parsed options mapped to their value.
 	 */
-	public readonly options = new Map<string, string[]>();
-
-	/**
-	 * A list of ordered arguments, in the order they were provided.
-	 */
-	public readonly ordered: Token[] = [];
+	options: Map<string, string[]>;
 }
+
+/**
+ * Creates an empty parser output.
+ */
+export const emptyOutput = (): ParserOutput => ({ ordered: [], flags: new Set(), options: new Map() });
