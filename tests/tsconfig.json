@@ -5,8 +5,8 @@
 		"noEmit": true,
 		"baseUrl": "../src",
 		"paths": {
-			"#framework": ["framework/index"],
-			"#framework/*": ["framework/*"],
+			"#core": ["core/index"],
+			"#core/*": ["core/*"],
 			"#database/*": ["lib/database/*"],
 			"#structures/*": ["lib/structures/*"],
 			"#utils/*": ["lib/utils/*"],

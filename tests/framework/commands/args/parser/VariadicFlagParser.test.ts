@@ -1,5 +1,5 @@
-import { Lexer } from '#framework/commands/args/Lexer';
-import { VariadicFlagParser } from '#framework/commands/args/parser/VariadicFlagParser';
+import { Lexer } from '#core/commands/args/Lexer';
+import { VariadicFlagParser } from '#core/commands/args/parser/VariadicFlagParser';
 
 describe('VariadicFlagParser#registerFlags()', () => {
 	it('should register the flags given', () => {

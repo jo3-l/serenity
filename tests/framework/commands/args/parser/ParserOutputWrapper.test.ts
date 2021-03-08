@@ -1,7 +1,7 @@
-import { Lexer } from '#framework/commands/args/Lexer';
-import { ParserOutputWrapper } from '#framework/commands/args/parser/ParserOutputWrapper';
-import { StandardParser } from '#framework/commands/args/parser/StandardParser';
-import { joinTokens } from '#framework/commands/args/tokens';
+import { Lexer } from '#core/commands/args/Lexer';
+import { ParserOutputWrapper } from '#core/commands/args/parser/ParserOutputWrapper';
+import { StandardParser } from '#core/commands/args/parser/StandardParser';
+import { joinTokens } from '#core/commands/args/tokens';
 import { err, none, ok, some } from '#utils/monads';
 
 const numberTransformer = (value: string) => (/^\d+$/.test(value) ? some(Number(value)) : none);

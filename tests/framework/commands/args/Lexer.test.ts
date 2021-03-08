@@ -5,7 +5,7 @@
  *
  * Copyright (c) 2020 1Computer.
  */
-import { Lexer } from '#framework/commands/args/Lexer';
+import { Lexer } from '#core/commands/args/Lexer';
 
 describe('Lexer#lex()', () => {
 	it('should parse text without quotes', () => {

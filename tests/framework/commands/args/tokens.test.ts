@@ -1,5 +1,5 @@
-import { Lexer } from '#framework/commands/args/Lexer';
-import { joinTokens } from '#framework/commands/args/tokens';
+import { Lexer } from '#core/commands/args/Lexer';
+import { joinTokens } from '#core/commands/args/tokens';
 
 describe('joinTokens()', () => {
 	it('should return an empty string given an empty list of tokens', () => {
