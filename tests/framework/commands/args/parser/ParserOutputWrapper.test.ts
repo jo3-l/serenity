@@ -4,6 +4,25 @@ import { StandardParser } from '#framework/commands/args/parser/StandardParser';
 import { joinTokens } from '#framework/commands/args/tokens';
 import { err, none, ok, some } from '#utils/monads';
 
+const numberTransformer = (value: string) => (/^\d+$/.test(value) ? some(Number(value)) : none);
+const asyncNumberTransformer = (value: string) => Promise.resolve(/^\d+$/.test(value) ? some(Number(value)) : none);
+
+const notNumberError = err('not a number');
+const numberParser = (value: string) => (/^\d+$/.test(value) ? ok(Number(value)) : notNumberError);
+const asyncNumberParser = (value: string) => Promise.resolve(/^\d+$/.test(value) ? ok(Number(value)) : notNumberError);
+
+const infinityNotSupportedError = err('infinity not supported');
+const asyncExtendedNumberParser = (value: string) => {
+	if (value === 'infinity') return Promise.resolve(infinityNotSupportedError);
+	if (!/^\d+$/.test(value)) return Promise.resolve(notNumberError);
+	return Promise.resolve(ok(Number(value)));
+};
+const extendedNumberParser = (value: string) => {
+	if (value === 'infinity') return infinityNotSupportedError;
+	if (!/^\d+$/.test(value)) return notNumberError;
+	return ok(Number(value));
+};
+
 function getOutputWrapper(
 	input: string,
 	{
@@ -145,7 +164,6 @@ describe('ParserOutputWrapper#nextOrdered()', () => {
 		it('should skip already used indices', () => {
 			const output = getOutputWrapper('hello world foo bar');
 			output.markAsUsed(3);
-
 			expect(output.nextOrdered(true)).toBe('foo');
 		});
 	});
@@ -174,7 +192,6 @@ describe('ParserOutputWrapper#retrieveMany()', () => {
 		it('should use the current position in the forward direction by default', () => {
 			const output = getOutputWrapper('1 2 3 4');
 			output.nextOrdered();
-
 			expect(joinTokens(output.retrieveMany())).toBe('2 3 4');
 		});
 
@@ -186,15 +203,19 @@ describe('ParserOutputWrapper#retrieveMany()', () => {
 		it('should skip already used indices', () => {
 			const output = getOutputWrapper('1 2 3 4');
 			output.markAsUsed(0);
-
 			expect(joinTokens(output.retrieveMany())).toBe('2 3 4');
 		});
 
 		it('should mark the tokens as used', () => {
 			const output = getOutputWrapper('1 2 3 4');
 			output.retrieveMany();
-
 			expect(output.nextOrdered()).toBeUndefined();
+		});
+
+		it('should respect the limit', () => {
+			const output = getOutputWrapper('1 2 3 4');
+			// '3 ' because the 3rd token has trailing whitespace.
+			expect(joinTokens(output.retrieveMany({ limit: 3 }))).toBe('1 2 3 ');
 		});
 	});
 
@@ -217,22 +238,23 @@ describe('ParserOutputWrapper#retrieveMany()', () => {
 		it('should skip already used indices', () => {
 			const output = getOutputWrapper('1 2 3 4');
 			output.markAsUsed(2);
-
 			expect(joinTokens(output.retrieveMany({ fromEnd: true }))).toBe('1 2 4');
 		});
 
 		it('should mark the tokens as used', () => {
 			const output = getOutputWrapper('1 2 3 4');
 			output.retrieveMany();
-
 			expect(output.nextOrdered(true)).toBeUndefined();
+		});
+
+		it('should respect the limit', () => {
+			const output = getOutputWrapper('1 2 3 4');
+			expect(joinTokens(output.retrieveMany({ fromEnd: true, limit: 3 }))).toBe('2 3 4');
 		});
 	});
 });
 
 describe('ParserOutputWrapper#mapNext()', () => {
-	const numberTransformer = (value: string) => (/^\d+$/.test(value) ? some(Number(value)) : none);
-
 	it('should return undefined if there are no more tokens', () => {
 		expect(getOutputWrapper('').mapNext(numberTransformer)).toBeUndefined();
 	});
@@ -268,8 +290,6 @@ describe('ParserOutputWrapper#mapNext()', () => {
 });
 
 describe('ParserOutputWrapper#mapNextAsync()', () => {
-	const asyncNumberTransformer = (value: string) => Promise.resolve(/^\d+$/.test(value) ? some(Number(value)) : none);
-
 	it('should return undefined if there are no more tokens', () => {
 		return expect(getOutputWrapper('').mapNextAsync(asyncNumberTransformer)).resolves.toBeUndefined();
 	});
@@ -282,7 +302,6 @@ describe('ParserOutputWrapper#mapNextAsync()', () => {
 	it('should skip already used tokens', async () => {
 		const output = getOutputWrapper('foo 123 baz buz');
 		output.markAsUsed(0);
-
 		await expect(output.mapNextAsync(asyncNumberTransformer)).resolves.toStrictEqual(some(123));
 	});
 
@@ -304,10 +323,7 @@ describe('ParserOutputWrapper#mapNextAsync()', () => {
 	});
 });
 
-describe('ParserOutput#parseNext()', () => {
-	const notNumberError = err('not a number');
-	const numberParser = (value: string) => (/^\d+$/.test(value) ? ok(Number(value)) : notNumberError);
-
+describe('ParserOutputWrapper#parseNext()', () => {
 	it('should return undefined if there are no more tokens', () => {
 		expect(getOutputWrapper('').parseNext(numberParser)).toBeUndefined();
 	});
@@ -320,7 +336,6 @@ describe('ParserOutput#parseNext()', () => {
 	it('should skip already used tokens', () => {
 		const output = getOutputWrapper('foo 123 baz buz');
 		output.markAsUsed(0);
-
 		expect(output.parseNext(numberParser)).toStrictEqual(ok(123));
 	});
 
@@ -342,11 +357,7 @@ describe('ParserOutput#parseNext()', () => {
 	});
 });
 
-describe('ParserOutput#parseNextAsync()', () => {
-	const notNumberError = err('not a number');
-	const asyncNumberParser = (value: string) =>
-		Promise.resolve(/^\d+$/.test(value) ? ok(Number(value)) : notNumberError);
-
+describe('ParserOutputWrapper#parseNextAsync()', () => {
 	it('should return undefined if there are no more tokens', async () => {
 		return expect(getOutputWrapper('').parseNextAsync(asyncNumberParser)).resolves.toBeUndefined();
 	});
@@ -380,5 +391,438 @@ describe('ParserOutput#parseNextAsync()', () => {
 
 		expect(output.nextOrdered()).toBe('123');
 		await expect(output.parseNextAsync(asyncNumberParser)).resolves.toStrictEqual(ok(234));
+	});
+});
+
+describe('ParserOutputWrapper#mapWhile()', () => {
+	it('should return an empty list if there are no more tokens', () => {
+		expect(getOutputWrapper('').mapWhile(numberTransformer)).toStrictEqual([]);
+	});
+
+	it('should map tokens', () => {
+		const output = getOutputWrapper('123 456 789');
+		expect(output.mapWhile(numberTransformer)).toStrictEqual([123, 456, 789]);
+	});
+
+	it('should stop when it reaches a value that failed the transformation', () => {
+		expect(getOutputWrapper('123 456 hello 789').mapWhile(numberTransformer)).toStrictEqual([123, 456]);
+	});
+
+	it('should ignore tokens that are already used', () => {
+		const output = getOutputWrapper('123 world 234 456 baz');
+		output.markAsUsed(1);
+		expect(output.mapWhile(numberTransformer)).toStrictEqual([123, 234, 456]);
+	});
+
+	it('should start searching from the current position by default', () => {
+		const output = getOutputWrapper('abc 123 234 456');
+		output.nextOrdered();
+		expect(output.mapWhile(numberTransformer)).toStrictEqual([123, 234, 456]);
+	});
+
+	it('should start searching from the given position if one was passed', () => {
+		const output = getOutputWrapper('hello world 123 234 456');
+		expect(output.mapWhile(numberTransformer, { startPosition: 2 })).toStrictEqual([123, 234, 456]);
+	});
+
+	it('should respect the limit given', () => {
+		const output = getOutputWrapper('123 234 345 456');
+		expect(output.mapWhile(numberTransformer, { limit: 3 })).toStrictEqual([123, 234, 345]);
+	});
+
+	it('should only mark tokens that passed the transformation as used by default', () => {
+		const output = getOutputWrapper('123 234 345 hello');
+		output.mapWhile(numberTransformer);
+		expect(output.nextOrdered()).toBe('hello');
+	});
+
+	it('should mark tokens as used regardless of whether they passed the transformation if alwaysUse = true', () => {
+		const output = getOutputWrapper('123 234 345 hello');
+		output.mapWhile(numberTransformer, { alwaysUse: true });
+		expect(output.nextOrdered()).toBeUndefined();
+	});
+});
+
+describe('ParserOutputWrapper#mapWhileAsync()', () => {
+	it('should return an empty list if there are no more tokens', () => {
+		const output = getOutputWrapper('');
+		return expect(output.mapWhileAsync(asyncNumberTransformer)).resolves.toStrictEqual([]);
+	});
+
+	it('should map tokens', async () => {
+		const output = getOutputWrapper('123 456 789');
+		await expect(output.mapWhileAsync(asyncNumberTransformer)).resolves.toStrictEqual([123, 456, 789]);
+	});
+
+	it('should stop when it reaches a value that failed the transformation', async () => {
+		const output = getOutputWrapper('123 456 hello 789');
+		await expect(output.mapWhileAsync(asyncNumberTransformer)).resolves.toStrictEqual([123, 456]);
+	});
+
+	it('should ignore tokens that are already used', async () => {
+		const output = getOutputWrapper('123 world 234 456 baz');
+		output.markAsUsed(1);
+		await expect(output.mapWhileAsync(asyncNumberTransformer)).resolves.toStrictEqual([123, 234, 456]);
+	});
+
+	it('should start searching from the current position by default', async () => {
+		const output = getOutputWrapper('abc 123 234 456');
+		output.nextOrdered();
+		await expect(output.mapWhileAsync(asyncNumberTransformer)).resolves.toStrictEqual([123, 234, 456]);
+	});
+
+	it('should start searching from the given position if one was passed', async () => {
+		const output = getOutputWrapper('hello world 123 234 456');
+		await expect(output.mapWhileAsync(asyncNumberTransformer, { startPosition: 2 })).resolves.toStrictEqual([
+			123,
+			234,
+			456,
+		]);
+	});
+
+	it('should respect the limit given', async () => {
+		const output = getOutputWrapper('123 234 345 456');
+		await expect(output.mapWhileAsync(asyncNumberTransformer, { limit: 3 })).resolves.toStrictEqual([123, 234, 345]);
+	});
+
+	it('should only mark tokens that passed the transformation as used by default', async () => {
+		const output = getOutputWrapper('123 234 345 hello');
+		await output.mapWhileAsync(asyncNumberTransformer);
+		expect(output.nextOrdered()).toBe('hello');
+	});
+
+	it('should mark tokens as used regardless of whether they passed the transformation if alwaysUse = true', async () => {
+		const output = getOutputWrapper('123 234 345 hello');
+		await output.mapWhileAsync(asyncNumberTransformer, { alwaysUse: true });
+		expect(output.nextOrdered()).toBeUndefined();
+	});
+});
+
+describe('ParserOutputWrapper#findMap()', () => {
+	it('should return nothing if there are no more tokens', () => {
+		expect(getOutputWrapper('').findMap(numberTransformer)).toStrictEqual(none);
+	});
+
+	it('should return the first value that could be transformed successfully', () => {
+		const output = getOutputWrapper('hello world 123 :D 234');
+		expect(output.findMap(numberTransformer)).toStrictEqual(some(123));
+	});
+
+	it('should return nothing if it could not find a token', () => {
+		const output = getOutputWrapper('hello world foo bar baz');
+		expect(output.findMap(numberTransformer)).toStrictEqual(none);
+	});
+
+	it('should ignore tokens that are already used', () => {
+		const output = getOutputWrapper('hello world foo 123 bar baz 234');
+		output.markAsUsed(3);
+		expect(output.findMap(numberTransformer)).toStrictEqual(some(234));
+	});
+
+	it('should start searching from the current position by default', () => {
+		const output = getOutputWrapper('123 hello world 234');
+		output.nextOrdered();
+		expect(output.findMap(numberTransformer)).toStrictEqual(some(234));
+	});
+
+	it('should start searching from the given position if one was passed', () => {
+		const output = getOutputWrapper('hello world 123 234');
+		expect(output.findMap(numberTransformer, { startPosition: 3 })).toStrictEqual(some(234));
+	});
+
+	it('should only mark tokens that passed the transformation as used by default', () => {
+		const output = getOutputWrapper('hello world 123');
+		output.findMap(numberTransformer);
+		expect(output.nextOrdered()).toBe('hello');
+	});
+
+	it('should mark tokens as used regardless of whether they passed the transformation if alwaysUse = true', () => {
+		const output = getOutputWrapper('hello world 123');
+		output.findMap(numberTransformer, { alwaysUse: true });
+		expect(output.nextOrdered()).toBeUndefined();
+	});
+});
+
+describe('ParserOutputWrapper#findMapAsync()', () => {
+	it('should return nothing if there are no more tokens', async () => {
+		return expect(getOutputWrapper('').findMapAsync(asyncNumberTransformer)).resolves.toStrictEqual(none);
+	});
+
+	it('should return the first value that could be transformed successfully', async () => {
+		const output = getOutputWrapper('hello world 123 :D 234');
+		await expect(output.findMapAsync(asyncNumberTransformer)).resolves.toStrictEqual(some(123));
+	});
+
+	it('should return nothing if it could not find a token', async () => {
+		const output = getOutputWrapper('hello world foo bar baz');
+		await expect(output.findMapAsync(asyncNumberTransformer)).resolves.toStrictEqual(none);
+	});
+
+	it('should ignore tokens that are already used', async () => {
+		const output = getOutputWrapper('hello world foo 123 bar baz 234');
+		output.markAsUsed(3);
+		await expect(output.findMapAsync(asyncNumberTransformer)).resolves.toStrictEqual(some(234));
+	});
+
+	it('should start searching from the current position by default', async () => {
+		const output = getOutputWrapper('123 hello world 234');
+		output.nextOrdered();
+		await expect(output.findMapAsync(asyncNumberTransformer)).resolves.toStrictEqual(some(234));
+	});
+
+	it('should start searching from the given position if one was passed', async () => {
+		const output = getOutputWrapper('hello world 123 234');
+		await expect(output.findMapAsync(asyncNumberTransformer, { startPosition: 3 })).resolves.toStrictEqual(some(234));
+	});
+
+	it('should only mark tokens that passed the transformation as used by default', async () => {
+		const output = getOutputWrapper('hello world 123');
+		await output.findMapAsync(asyncNumberTransformer);
+		expect(output.nextOrdered()).toBe('hello');
+	});
+
+	it('should mark tokens as used regardless of whether they passed the transformation if alwaysUse = true', async () => {
+		const output = getOutputWrapper('hello world 123');
+		await output.findMapAsync(asyncNumberTransformer, { alwaysUse: true });
+		expect(output.nextOrdered()).toBeUndefined();
+	});
+});
+
+describe('ParserOutputWrapper#findParse()', () => {
+	it('should return an empty list of errors if there are no more tokens', () => {
+		expect(getOutputWrapper('').findParse(numberParser)).toStrictEqual(err([]));
+	});
+
+	it('should return the first value that could be parsed successfully', () => {
+		const output = getOutputWrapper('hello world 123 :D 234');
+		expect(output.findParse(numberParser)).toStrictEqual(ok(123));
+	});
+
+	it('should return a list of errors in order if it could not find a token', () => {
+		const output = getOutputWrapper('hello world infinity foo bar baz');
+		expect(output.findParse(extendedNumberParser)).toStrictEqual(
+			err(
+				[notNumberError, notNumberError, infinityNotSupportedError, notNumberError, notNumberError, notNumberError].map(
+					(result) => result.error,
+				),
+			),
+		);
+	});
+
+	it('should ignore tokens that are already used', () => {
+		const output = getOutputWrapper('hello world foo 123 bar baz 234');
+		output.markAsUsed(3);
+		expect(output.findParse(numberParser)).toStrictEqual(ok(234));
+	});
+
+	it('should start searching from the current position by default', () => {
+		const output = getOutputWrapper('123 hello world 234');
+		output.nextOrdered();
+		expect(output.findParse(numberParser)).toStrictEqual(ok(234));
+	});
+
+	it('should start searching from the given position if one was passed', () => {
+		const output = getOutputWrapper('hello world 123 234');
+		expect(output.findParse(numberParser, { startPosition: 3 })).toStrictEqual(ok(234));
+	});
+
+	it('should only mark tokens that were parsed successfully as used by default', () => {
+		const output = getOutputWrapper('hello world 123');
+		output.findParse(numberParser);
+		expect(output.nextOrdered()).toBe('hello');
+	});
+
+	it('should mark tokens as used regardless of whether they were parsed successfully if alwaysUse = true', () => {
+		const output = getOutputWrapper('hello world 123');
+		output.findParse(numberParser, { alwaysUse: true });
+		expect(output.nextOrdered()).toBeUndefined();
+	});
+});
+
+describe('ParserOutputWrapper#findParseAsync()', () => {
+	it('should return an empty list of errors if there are no more tokens', async () => {
+		return expect(getOutputWrapper('').findParseAsync(asyncExtendedNumberParser)).resolves.toStrictEqual(err([]));
+	});
+
+	it('should return the first value that could be parsed successfully', async () => {
+		const output = getOutputWrapper('hello world 123 :D 234');
+		await expect(output.findParseAsync(asyncExtendedNumberParser)).resolves.toStrictEqual(ok(123));
+	});
+
+	it('should return nothing if it could not find a token', async () => {
+		const output = getOutputWrapper('hello world infinity foo bar baz');
+		await expect(output.findParseAsync(asyncExtendedNumberParser)).resolves.toStrictEqual(
+			err(
+				[notNumberError, notNumberError, infinityNotSupportedError, notNumberError, notNumberError, notNumberError].map(
+					(result) => result.error,
+				),
+			),
+		);
+	});
+
+	it('should ignore tokens that are already used', async () => {
+		const output = getOutputWrapper('hello world foo 123 bar baz 234');
+		output.markAsUsed(3);
+		await expect(output.findParseAsync(asyncExtendedNumberParser)).resolves.toStrictEqual(ok(234));
+	});
+
+	it('should start searching from the current position by default', async () => {
+		const output = getOutputWrapper('123 hello world 234');
+		output.nextOrdered();
+		await expect(output.findParseAsync(asyncExtendedNumberParser)).resolves.toStrictEqual(ok(234));
+	});
+
+	it('should start searching from the given position if one was passed', async () => {
+		const output = getOutputWrapper('hello world 123 234');
+		await expect(output.findParseAsync(asyncExtendedNumberParser, { startPosition: 3 })).resolves.toStrictEqual(
+			ok(234),
+		);
+	});
+
+	it('should only mark tokens that were parsed successfully as used by default', async () => {
+		const output = getOutputWrapper('hello world 123');
+		await output.findParseAsync(asyncExtendedNumberParser);
+		expect(output.nextOrdered()).toBe('hello');
+	});
+
+	it('should mark tokens as used regardless of whether parsing succeed if alwaysUse = true', async () => {
+		const output = getOutputWrapper('hello world 123');
+		await output.findParseAsync(asyncExtendedNumberParser, { alwaysUse: true });
+		expect(output.nextOrdered()).toBeUndefined();
+	});
+});
+
+// #region
+
+describe('ParserOutputWrapper#filterMap()', () => {
+	it('should return an empty list if there are no more tokens', () => {
+		expect(getOutputWrapper('').filterMap(numberTransformer)).toStrictEqual([]);
+	});
+
+	it('should return a list of values that could be transformed successfully', () => {
+		const output = getOutputWrapper('hello world 123 :D 234');
+		expect(output.filterMap(numberTransformer)).toStrictEqual([123, 234]);
+	});
+
+	it('should respect the limit', () => {
+		const output = getOutputWrapper('hello world 123 234 345');
+		expect(output.filterMap(numberTransformer, { limit: 2 })).toStrictEqual([123, 234]);
+	});
+
+	it('should return an empty list if it could not find a token', () => {
+		const output = getOutputWrapper('hello world foo bar baz');
+		expect(output.filterMap(numberTransformer)).toStrictEqual([]);
+	});
+
+	it('should ignore tokens that are already used', () => {
+		const output = getOutputWrapper('hello world foo 123 bar baz 234');
+		output.markAsUsed(3);
+		expect(output.filterMap(numberTransformer)).toStrictEqual([234]);
+	});
+
+	it('should start searching from the current position by default', () => {
+		const output = getOutputWrapper('123 hello world 234');
+		output.nextOrdered();
+		expect(output.filterMap(numberTransformer)).toStrictEqual([234]);
+	});
+
+	it('should start searching from the given position if one was passed', () => {
+		const output = getOutputWrapper('hello world 123 234');
+		expect(output.filterMap(numberTransformer, { startPosition: 3 })).toStrictEqual([234]);
+	});
+
+	it('should only mark tokens that passed the transformation as used by default', () => {
+		const output = getOutputWrapper('hello world 123');
+		output.filterMap(numberTransformer);
+		expect(output.nextOrdered()).toBe('hello');
+	});
+
+	it('should mark tokens as used regardless of whether they passed the transformation if alwaysUse = true', () => {
+		const output = getOutputWrapper('hello world 123');
+		output.filterMap(numberTransformer, { alwaysUse: true });
+		expect(output.nextOrdered()).toBeUndefined();
+	});
+});
+
+describe('ParserOutputWrapper#filterMapAsync()', () => {
+	it('should return an empty list if there are no more tokens', async () => {
+		return expect(getOutputWrapper('').filterMapAsync(asyncNumberTransformer)).resolves.toStrictEqual([]);
+	});
+
+	it('should return a list of values that could be transformed successfully', async () => {
+		const output = getOutputWrapper('hello world 123 :D 234');
+		await expect(output.filterMapAsync(asyncNumberTransformer)).resolves.toStrictEqual([123, 234]);
+	});
+
+	it('should respect the limit', async () => {
+		const output = getOutputWrapper('hello world 123 234 345');
+		await expect(output.filterMapAsync(asyncNumberTransformer, { limit: 2 })).resolves.toStrictEqual([123, 234]);
+	});
+
+	it('should return an empty list if it could not find a token', async () => {
+		const output = getOutputWrapper('hello world foo bar baz');
+		await expect(output.filterMapAsync(asyncNumberTransformer)).resolves.toStrictEqual([]);
+	});
+
+	it('should ignore tokens that are already used', async () => {
+		const output = getOutputWrapper('hello world foo 123 bar baz 234');
+		output.markAsUsed(3);
+		await expect(output.filterMapAsync(asyncNumberTransformer)).resolves.toStrictEqual([234]);
+	});
+
+	it('should start searching from the current position by default', async () => {
+		const output = getOutputWrapper('123 hello world 234');
+		output.nextOrdered();
+		await expect(output.filterMapAsync(asyncNumberTransformer)).resolves.toStrictEqual([234]);
+	});
+
+	it('should start searching from the given position if one was passed', async () => {
+		const output = getOutputWrapper('hello world 123 234');
+		await expect(output.filterMapAsync(asyncNumberTransformer, { startPosition: 3 })).resolves.toStrictEqual([234]);
+	});
+
+	it('should only mark tokens that passed the transformation as used by default', async () => {
+		const output = getOutputWrapper('hello world 123');
+		await output.filterMapAsync(asyncNumberTransformer);
+		expect(output.nextOrdered()).toBe('hello');
+	});
+
+	it('should mark tokens as used regardless of whether they passed the transformation if alwaysUse = true', async () => {
+		const output = getOutputWrapper('hello world 123');
+		await output.filterMapAsync(asyncNumberTransformer, { alwaysUse: true });
+		expect(output.nextOrdered()).toBeUndefined();
+	});
+});
+
+describe('save/restore', () => {
+	describe('restore', () => {
+		it('should do nothing if there is no saved state', () => {
+			const output = getOutputWrapper('hello world 123');
+			output.nextOrdered();
+			output.reset();
+
+			expect(output.nextOrdered()).toBe('world');
+		});
+
+		it('should reset to the most recently saved state', () => {
+			const output = getOutputWrapper('hello world 123');
+			output.save();
+			output.nextOrdered();
+			output.reset();
+
+			expect(output.nextOrdered()).toBe('hello');
+		});
+
+		it('should clear the saved state once the reset is complete', () => {
+			const output = getOutputWrapper('hello world 123');
+			output.save();
+			output.nextOrdered();
+			output.reset();
+
+			expect(output.nextOrdered()).toBe('hello');
+			output.reset();
+
+			expect(output.nextOrdered()).toBe('world');
+		});
 	});
 });
