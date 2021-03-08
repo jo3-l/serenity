@@ -305,7 +305,7 @@ export class ParserOutputWrapper {
 	 * @returns The resulting values.
 	 */
 	public async mapWhileAsync<T>(
-		fn: (value: string) => Maybe<T>,
+		fn: (value: string) => Promise<Maybe<T>>,
 		{ alwaysUse = false, limit = Infinity, startPosition = this.state.position }: TransformManyOptions = {},
 	) {
 		if (this.done) return [];
@@ -445,20 +445,21 @@ export class ParserOutputWrapper {
 	}
 
 	/**
-	 * Finds and retrieves all unused tokens that could be transformed.
-	 * The tokens will now be considered used.
+	 * Finds and retrieves all unused tokens that could be transformed. The
+	 * tokens will now be considered used.
 	 *
 	 * @param fn - Returns a `Maybe` of either the resulting value, or nothing
 	 * if it did not succeed.
 	 * @param options - Options to use.
-	 * @returns A `Maybe` of either the resulting value, or nothing if it was
-	 * not found.
+	 * @returns A list of all resulting values.
 	 */
 	public filterMap<T>(
 		fn: (value: string) => Maybe<T>,
-		{ alwaysUse = false, startPosition = this.state.position }: Omit<TransformManyOptions, 'limit'> = {},
-	): Maybe<T> {
-		if (this.done) return none;
+		{ alwaysUse = false, limit = Infinity, startPosition = this.state.position }: TransformManyOptions = {},
+	) {
+		if (this.done) return [];
+
+		const values: T[] = [];
 		for (let i = startPosition; i < this.length; i++) {
 			if (this.state.usedIndices.has(i)) continue;
 
@@ -466,10 +467,12 @@ export class ParserOutputWrapper {
 			const result = fn(token.value);
 
 			if (alwaysUse || result.exists) this.markAsUsed(i);
-			if (result.exists) return result;
+			if (result.exists) values.push(result.value);
+
+			if (values.length === limit) return values;
 		}
 
-		return none;
+		return values;
 	}
 
 	/**
@@ -478,14 +481,15 @@ export class ParserOutputWrapper {
 	 * @param fn - Returns a `Maybe` of either the resulting value, or nothing
 	 * if it did not succeed.
 	 * @param options - Options to use.
-	 * @returns A `Maybe` of either the resulting value, or nothing if it was
-	 * not found.
+	 * @returns A list of all resulting values.
 	 */
 	public async filterMapAsync<T>(
 		fn: (value: string) => Promise<Maybe<T>>,
-		{ alwaysUse = false, startPosition = this.state.position }: Omit<TransformManyOptions, 'limit'> = {},
-	): Promise<Maybe<T>> {
-		if (this.done) return none;
+		{ alwaysUse = false, limit = Infinity, startPosition = this.state.position }: TransformManyOptions = {},
+	) {
+		if (this.done) return [];
+
+		const values: T[] = [];
 		for (let i = startPosition; i < this.length; i++) {
 			if (this.state.usedIndices.has(i)) continue;
 
@@ -493,10 +497,12 @@ export class ParserOutputWrapper {
 			const result = await fn(token.value);
 
 			if (alwaysUse || result.exists) this.markAsUsed(i);
-			if (result.exists) return result;
+			if (result.exists) values.push(result.value);
+
+			if (values.length === limit) return values;
 		}
 
-		return none;
+		return values;
 	}
 
 	/**
@@ -510,23 +516,29 @@ export class ParserOutputWrapper {
 	}
 
 	/**
-	 * Saves the current state of the wrapper. It can be restored later using
-	 * `restore()`.
+	 * Saves the current state.
 	 */
 	public save() {
-		this.savedState = this.state;
+		const clonedState = { ...this.state };
+		// Spread operator is a shallow clone, `usedIndices` still points to the original value.
+		clonedState.usedIndices = new Set(clonedState.usedIndices);
+
+		this.savedState = clonedState;
 	}
 
 	/**
-	 * Restores a previously saved state. If there was no state saved, nothing
-	 * happens.
+	 * Resets this output wrapper to the most recent saved state. The saved
+	 * state will be cleared after the reset is complete. If there is no saved
+	 * state, this method does nothing.
 	 */
-	public restore() {
+	public reset() {
 		if (!this.savedState) return;
 		this.state = this.savedState;
+		this.savedState = undefined;
 	}
 
 	private nextToken() {
+		/* istanbul ignore next - Private method */
 		if (this.done) return undefined;
 		while (this.state.usedIndices.has(this.state.position)) ++this.state.position;
 		return this.parserOutput.ordered[this.state.position];
