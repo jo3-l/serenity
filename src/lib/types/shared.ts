@@ -52,3 +52,31 @@ type UniqueSymbol = typeof v;
  * `InferLiteral` for details.
  */
 export type ImpossibleType = [[134596 & { [v]: 45677 }, UniqueSymbol, Record<UniqueSymbol, [[never] & { [v]: void }]>]];
+
+
+/**
+ * A utility type that resolves to the constructor type of the class instance
+ * type provided.
+ */
+export type Constructor<T = unknown> = abstract new (...args: any[]) => T;
+
+/**
+ * A type that may or may not be a promise.
+ */
+export type MaybePromise<T> = T | Promise<T>;
+
+/**
+ * Represents a 'thenable', A 'thenable' is an object containing callable `then`
+ * and `catch` members.
+ */
+export interface Thenable {
+	// `(...args: any[]) => unknown` does not work if we await a `Thenable` (we
+	// get a TS compilation error). Extending `PromiseLike<T>` works, but
+	// narrowing types does not work as expected. `Function` seems to be the
+	// only type that solves both problems.
+
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	then: Function;
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	catch: Function;
+}
