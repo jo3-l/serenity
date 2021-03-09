@@ -76,7 +76,7 @@ rules:
         - property
       format:
         - strictCamelCase
-        - UPPER_CASE
+        - PascalCase
       leadingUnderscore: allow
       trailingUnderscore: forbid
 
