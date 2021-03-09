@@ -1,5 +1,5 @@
-import { Lexer } from '#framework/commands/args/Lexer';
-import { StandardParser } from '#framework/commands/args/parser/StandardParser';
+import { Lexer } from '#core/commands/args/Lexer';
+import { StandardParser } from '#core/commands/args/parser/StandardParser';
 
 describe('StandardParser#registerFlags()', () => {
 	it('should register the flags given', () => {

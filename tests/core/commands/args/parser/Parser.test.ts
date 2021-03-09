@@ -1,7 +1,7 @@
-import { Lexer } from '#framework/commands/args/Lexer';
-import { Parser } from '#framework/commands/args/parser/Parser';
-import type { ParserOutput } from '#framework/commands/args/parser/ParserOutput';
-import { emptyOutput } from '#framework/commands/args/parser/ParserOutput';
+import { Lexer } from '#core/commands/args/Lexer';
+import { Parser } from '#core/commands/args/parser/Parser';
+import type { ParserOutput } from '#core/commands/args/parser/ParserOutput';
+import { emptyOutput } from '#core/commands/args/parser/ParserOutput';
 
 class ParserImpl extends Parser {
 	public next(output = emptyOutput()): IteratorResult<ParserOutput, undefined> {
