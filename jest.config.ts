@@ -13,10 +13,12 @@ const config: Config.InitialOptions = {
 	collectCoverageFrom: ['src/**/*.ts'],
 	coveragePathIgnorePatterns: [
 		'src/Serenity.ts',
+		'src/core/SerenityClient.ts',
 		'src/lib/setup/*',
 		'src/lib/utils/decorators.ts',
 		'src/lib/utils/version.ts',
 		'src/lib/utils/logger.ts',
+		'src/core/components/*',
 	],
 	displayName: 'unit test',
 	preset: 'ts-jest',
