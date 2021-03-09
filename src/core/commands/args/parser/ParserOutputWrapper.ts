@@ -520,7 +520,8 @@ export class ParserOutputWrapper {
 	 */
 	public save() {
 		const clonedState = { ...this.state };
-		// Spread operator is a shallow clone, `usedIndices` still points to the original value.
+		// Spread operator results in a shallow clone, so `usedIndices` still
+		// points to the original value.
 		clonedState.usedIndices = new Set(clonedState.usedIndices);
 
 		this.savedState = clonedState;
