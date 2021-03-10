@@ -32,4 +32,22 @@ export abstract class Component {
 	public constructor(id: string) {
 		this.id = id;
 	}
+
+	/**
+	 * Unloads this component.
+	 *
+	 * @returns The component.
+	 */
+	public unload() {
+		return this.handler.unload(this);
+	}
+
+	/**
+	 * Reloads this component.
+	 *
+	 * @returns The component.
+	 */
+	public reload() {
+		return this.handler.reload(this);
+	}
 }
