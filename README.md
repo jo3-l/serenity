@@ -13,6 +13,10 @@
 
 <div align='center'>
 	<img
+		src='https://img.shields.io/codecov/c/github/jo3-l/serenity?style=for-the-badge'
+		alt='Code Coverage'
+	/>
+	<img
 	    src='https://img.shields.io/lgtm/grade/javascript/github/jo3-l/serenity?style=for-the-badge'
 	    alt='Code Quality'
 	/>
