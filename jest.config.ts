@@ -9,17 +9,6 @@ import { pathsToModuleNameMapper } from 'ts-jest/utils';
 const { compilerOptions } = require('./src/tsconfig.json');
 
 const config: Config.InitialOptions = {
-	collectCoverage: true,
-	collectCoverageFrom: ['src/**/*.ts'],
-	coveragePathIgnorePatterns: [
-		'src/Serenity.ts',
-		'src/core/SerenityClient.ts',
-		'src/lib/setup/*',
-		'src/lib/utils/decorators.ts',
-		'src/lib/utils/version.ts',
-		'src/lib/utils/logger.ts',
-		'src/core/components/*',
-	],
 	displayName: 'unit test',
 	preset: 'ts-jest',
 	testEnvironment: 'node',
@@ -29,6 +18,20 @@ const config: Config.InitialOptions = {
 	globals: {
 		'ts-jest': { tsconfig: '<rootDir>/tests/tsconfig.json' },
 	},
+	collectCoverage: true,
+	collectCoverageFrom: ['src/**/*.ts'],
+	coverageProvider: 'v8',
+	coverageDirectory: 'coverage',
+	coverageReporters: ['text', 'lcov', 'clover'],
+	coveragePathIgnorePatterns: [
+		'src/Serenity.ts',
+		'src/core/SerenityClient.ts',
+		'src/lib/setup/*',
+		'src/lib/utils/decorators.ts',
+		'src/lib/utils/version.ts',
+		'src/lib/utils/logger.ts',
+		'src/core/components/*',
+	],
 };
 
 export default config;
