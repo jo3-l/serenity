@@ -20,7 +20,6 @@ const config: Config.InitialOptions = {
 	},
 	collectCoverage: true,
 	collectCoverageFrom: ['src/**/*.ts'],
-	coverageProvider: 'v8',
 	coverageDirectory: 'coverage',
 	coverageReporters: ['text', 'lcov', 'clover'],
 	coveragePathIgnorePatterns: [
