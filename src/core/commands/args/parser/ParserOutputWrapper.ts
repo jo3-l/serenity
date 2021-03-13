@@ -1,11 +1,3 @@
-/**
- * The code here is heavily inspired by 1Computer1's
- * [Lexure](https://github.com/1Computer1/lexure), licensed under the MIT
- * license.
- *
- * Copyright (c) 2020 1Computer.
- */
-
 import type { Maybe, Result } from '#utils/monads';
 import { err, none } from '#utils/monads';
 

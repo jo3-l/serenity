@@ -1,11 +1,3 @@
-/**
- * The code here is heavily inspired by 1Computer1's
- * [Lexure](https://github.com/1Computer1/lexure), licensed under the MIT
- * license.
- *
- * Copyright (c) 2020 1Computer.
- */
-
 import type { Token } from '../tokens';
 import type { ParserOutput } from './ParserOutput';
 import { emptyOutput } from './ParserOutput';
