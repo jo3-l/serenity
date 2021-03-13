@@ -86,10 +86,11 @@ export abstract class ComponentHandler<
 			let value = this.loaderStrategy.load(filepath);
 			if (isThenable(value)) value = await value;
 
-			for (const component of this.loaderStrategy.resolve(this, value)) {
-				const instance: TComponent = Reflect.construct(component, []);
-				promises.push(this.load(instance, filepath));
-			}
+			const component = this.loaderStrategy.resolve(this, value);
+			if (!component) continue;
+
+			const instance: TComponent = Reflect.constructor(component, []);
+			promises.push(this.load(instance, filepath));
 		}
 
 		await Promise.all(promises);

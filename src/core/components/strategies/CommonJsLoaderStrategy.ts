@@ -7,8 +7,8 @@ import type { LoaderStrategy } from './LoaderStrategy';
 import { extname } from 'path';
 
 /**
- * A loader strategy that uses the CommonJS module system, supporting multiple
- * default and named exports in addition to hot-reloading.
+ * A loader strategy for the CommonJS module system, supporting both default and
+ * named exports in addition to hot-reloading.
  */
 export class CommonJsLoaderStrategy<T extends Component> implements LoaderStrategy<T> {
 	private readonly supportedExtensions = new Set(['.js', '.ts']);
@@ -24,14 +24,14 @@ export class CommonJsLoaderStrategy<T extends Component> implements LoaderStrate
 		return mod;
 	}
 
-	public *resolve(handler: ComponentHandler<T>, value: unknown) {
+	public resolve(handler: ComponentHandler<T>, value: unknown) {
 		// Handle `module.exports` / `export =`.
-		if (isClass(value) && isSubclassOf(value, handler.classType)) yield value;
+		if (isClass(value) && isSubclassOf(value, handler.classType)) return value;
 
 		// Handle named exports, including default exports.
 		if (!isObject(value)) return;
 		for (const namedExport of Object.values(value)) {
-			if (isClass(namedExport) && isSubclassOf(namedExport, handler.classType)) yield namedExport;
+			if (isClass(namedExport) && isSubclassOf(namedExport, handler.classType)) return namedExport;
 		}
 	}
 
