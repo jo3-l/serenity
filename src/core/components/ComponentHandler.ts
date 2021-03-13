@@ -85,16 +85,10 @@ export abstract class ComponentHandler<
 			let value = this.loaderStrategy.load(filepath);
 			if (isThenable(value)) value = await value;
 
-			let didLoad = false;
 			for (const component of this.loaderStrategy.resolve(this, value)) {
 				const instance: TComponent = Reflect.construct(component, []);
 				promises.push(this.load(instance, filepath));
-
-				if (!didLoad) didLoad = true;
 			}
-
-			// Try unloading the file if no components were loaded.
-			if (!didLoad) this.loaderStrategy.unload?.(filepath);
 		}
 
 		await Promise.all(promises);
@@ -112,6 +106,7 @@ export abstract class ComponentHandler<
 	 */
 	public async load(component: TComponent, filepath: string, isReload = false) {
 		if (this.components.has(component.id)) throw new Error(`Component '${component.id}' is already loaded.`);
+		if (!component.enabled) return component;
 
 		component.client = this.client;
 		component.handler = this;
