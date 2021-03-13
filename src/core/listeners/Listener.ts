@@ -28,6 +28,12 @@ export abstract class Listener extends Component {
 	 */
 	public readonly once: boolean;
 
+	/**
+	 * Creates a new `Listener`.
+	 *
+	 * @param id - ID of this listener.
+	 * @param options - Options for the listener.
+	 */
 	public constructor(id: string, { emitter, event, once = false, ...options }: ListenerOptions) {
 		super(id, options);
 
