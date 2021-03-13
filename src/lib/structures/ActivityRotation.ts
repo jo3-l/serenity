@@ -64,7 +64,7 @@ export class ActivityRotation {
 	@autobind
 	private setNextActivity() {
 		const activity = this.getNextActivity();
-		void this.client
+		this.client
 			.user!.setActivity(activity)
 			.then(() => logger.info('Set next activity in activity rotation'))
 			.catch(

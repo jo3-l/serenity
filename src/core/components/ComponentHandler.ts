@@ -1,5 +1,6 @@
 import type { SerenityClient } from '#core/SerenityClient';
 import type { Constructor } from '#lib/types/shared';
+import { autobind } from '#utils/decorators';
 import { isThenable } from '#utils/predicates';
 
 import type { Component } from './Component';
@@ -68,7 +69,7 @@ export abstract class ComponentHandler<
 		this.classType = classType;
 		this.loaderStrategy = loaderStrategy;
 
-		this.client.once(Constants.Events.CLIENT_READY, () => void this.initializeAll());
+		this.client.once(Constants.Events.CLIENT_READY, this.initializeAll);
 	}
 
 	/**
@@ -180,6 +181,7 @@ export abstract class ComponentHandler<
 	 * Initializes all components. This is automatically called once the client
 	 * is ready.
 	 */
+	@autobind
 	public async initializeAll() {
 		const promises = this.components.map(async (component) => {
 			await component.init?.();
