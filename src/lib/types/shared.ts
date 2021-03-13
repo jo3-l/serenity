@@ -61,6 +61,11 @@ export type ImpossibleType = [[134596 & { [v]: 45677 }, UniqueSymbol, Record<Uni
 export type Constructor<T = unknown> = abstract new (...args: any[]) => T;
 
 /**
+ * Casts `V` to type `T`.
+ */
+export type Cast<V, T> = V extends T ? V : T;
+
+/**
  * A type that may or may not be a promise.
  */
 export type MaybePromise<T> = T | Promise<T>;
