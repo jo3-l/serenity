@@ -30,6 +30,7 @@ const config: Config.InitialOptions = {
 		'src/lib/utils/version.ts',
 		'src/lib/utils/logger.ts',
 		'src/core/components/*',
+		'src/core/listeners/*',
 	],
 };
 
