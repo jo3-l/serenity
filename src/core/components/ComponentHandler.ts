@@ -4,8 +4,9 @@ import { isThenable } from '#utils/predicates';
 
 import type { Component } from './Component';
 import type { LoaderStrategy } from './strategies/LoaderStrategy';
+import { suppressEventListenersToken } from './tokens';
 
-import { Collection } from 'discord.js';
+import { Collection, Constants } from 'discord.js';
 import { EventEmitter } from 'events';
 import { readdir } from 'fs/promises';
 import { join } from 'path';
@@ -66,15 +67,18 @@ export abstract class ComponentHandler<
 		this.client = client;
 		this.classType = classType;
 		this.loaderStrategy = loaderStrategy;
+
+		this.client.once(Constants.Events.CLIENT_READY, () => void this.initializeAll());
 	}
 
 	/**
 	 * Loads all components recursively from the given directory.
 	 *
 	 * @param directory - Directory to find components in.
-	 * @returns The component handler.
+	 * @returns A promise resolving to the component handler.
 	 */
 	public async loadAll(directory: string) {
+		const promises = [];
 		for await (const filepath of this.walkDirectory(directory)) {
 			if (this.loaderStrategy.filter(filepath)) continue;
 
@@ -84,7 +88,7 @@ export abstract class ComponentHandler<
 			let didLoad = false;
 			for (const component of this.loaderStrategy.resolve(this, value)) {
 				const instance: TComponent = Reflect.construct(component, []);
-				this.load(instance, filepath);
+				promises.push(this.load(instance, filepath));
 
 				if (!didLoad) didLoad = true;
 			}
@@ -92,6 +96,8 @@ export abstract class ComponentHandler<
 			// Try unloading the file if no components were loaded.
 			if (!didLoad) this.loaderStrategy.unload?.(filepath);
 		}
+
+		await Promise.all(promises);
 
 		return this;
 	}
@@ -102,9 +108,9 @@ export abstract class ComponentHandler<
 	 * @param component - Component to load.
 	 * @param filepath - Filepath of the component.
 	 * @param isReload - Whether this is a reload. Defaults to false.
-	 * @returns The loaded component.
+	 * @returns A promise resolving to the loaded component.
 	 */
-	public load(component: TComponent, filepath: string, isReload = false) {
+	public async load(component: TComponent, filepath: string, isReload = false) {
 		if (this.components.has(component.id)) throw new Error(`Component '${component.id}' is already loaded.`);
 
 		component.client = this.client;
@@ -114,17 +120,21 @@ export abstract class ComponentHandler<
 		this.components.set(component.id, component);
 		this.register?.(component);
 
-		this.emit(ComponentHandlerEvents.Load, component, isReload);
+		let result = component.onLoad?.(isReload);
+		if (isThenable(result)) result = await result;
+		if (result !== suppressEventListenersToken) this.emit(ComponentHandlerEvents.Load, component, isReload);
+
 		return component;
 	}
 
 	/**
 	 * Unloads all components.
 	 *
-	 * @returns The component handler.
+	 * @returns A promise resolving to the component handler.
 	 */
-	public unloadAll() {
-		for (const component of this.components.values()) this.unload(component);
+	public async unloadAll() {
+		const promises = this.components.map((component) => component.unload());
+		await Promise.all(promises);
 		return this;
 	}
 
@@ -132,24 +142,28 @@ export abstract class ComponentHandler<
 	 * Unloads a component.
 	 *
 	 * @param component - Component to unload.
-	 * @returns The unloaded component.
+	 * @returns A promise resolving to the unloaded component.
 	 */
-	public unload(component: TComponent) {
+	public async unload(component: TComponent) {
 		this.loaderStrategy.unload?.(component.filepath);
 		this.components.delete(component.id);
 		this.unregister?.(component);
 
-		this.emit(ComponentHandlerEvents.Unload, component);
+		let result = component.onUnload?.();
+		if (isThenable(result)) result = await result;
+		if (result !== suppressEventListenersToken) this.emit(ComponentHandlerEvents.Unload, component);
+
 		return component;
 	}
 
 	/**
 	 * Reloads all components.
 	 *
-	 * @returns The component handler.
+	 * @returns A promise resolving to the component handler.
 	 */
-	public reloadAll() {
-		for (const component of this.components.values()) this.reload(component);
+	public async reloadAll() {
+		const promises = this.components.map((component) => this.reload(component));
+		await Promise.all(promises);
 		return this;
 	}
 
@@ -157,14 +171,28 @@ export abstract class ComponentHandler<
 	 * Reloads a component.
 	 *
 	 * @param component - Component to reload.
-	 * @returns The reloaded component.
+	 * @returns A promise resolving to the reloaded component.
 	 */
-	public reload(component: TComponent) {
+	public async reload(component: TComponent) {
 		this.loaderStrategy.unload?.(component.filepath);
 		this.unregister?.(component);
 
-		const reloadedComponent = this.load(component, component.filepath, true);
+		const reloadedComponent = await this.load(component, component.filepath, true);
 		return reloadedComponent;
+	}
+
+	/**
+	 * Initializes all components. This is automatically called once the client
+	 * is ready.
+	 */
+	public async initializeAll() {
+		const promises = this.components.map(async (component) => {
+			await component.init?.();
+			this.emit(ComponentHandlerEvents.Init, component);
+		});
+
+		await Promise.all(promises);
+		this.emit(ComponentHandlerEvents.AllInitialized);
 	}
 
 	private async *walkDirectory(directory: string): AsyncIterableIterator<string> {
@@ -224,6 +252,8 @@ export interface ComponentHandlerOptions<T extends Component = Component> {
 export const ComponentHandlerEvents = {
 	Load: 'load',
 	Unload: 'unload',
+	Init: 'init',
+	AllInitialized: 'allInitialized',
 } as const;
 
 /**
@@ -237,6 +267,8 @@ export type ComponentHandlerEvent = typeof ComponentHandlerEvents[keyof typeof C
 export interface ComponentHandlerEventTypes<T extends Component = Component> {
 	[ComponentHandlerEvents.Load]: [component: T, isReload: boolean];
 	[ComponentHandlerEvents.Unload]: [component: T];
+	[ComponentHandlerEvents.Init]: [component: T];
+	[ComponentHandlerEvents.AllInitialized]: [];
 }
 
 type EventEmitterFn<
