@@ -692,8 +692,6 @@ describe('ParserOutputWrapper#findParseAsync()', () => {
 	});
 });
 
-// #region
-
 describe('ParserOutputWrapper#filterMap()', () => {
 	it('should return an empty list if there are no more tokens', () => {
 		expect(getOutputWrapper('').filterMap(numberTransformer)).toStrictEqual([]);
