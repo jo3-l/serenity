@@ -244,7 +244,6 @@ export interface ComponentHandlerOptions<T extends Component = Component> {
 /**
  * Events emitted by the `ComponentHandler`.
  */
-
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const ComponentHandlerEvents = {
 	Load: 'load',
