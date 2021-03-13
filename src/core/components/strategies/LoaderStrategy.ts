@@ -26,13 +26,13 @@ export interface LoaderStrategy<T extends Component> {
 	load(filepath: string): unknown;
 
 	/**
-	 * Resolves components from a value.
+	 * Resolves a component from a value.
 	 *
 	 * @param handler - Handler which is loading this component.
-	 * @param value - Value to resolve components from.
-	 * @returns An iterator over the resolved components.
+	 * @param value - Value to resolve a component from.
+	 * @returns The resolved component, or `undefined` if it does not exist.
 	 */
-	resolve(handler: ComponentHandler<T>, value: unknown): IterableIterator<Constructor<T>>;
+	resolve(handler: ComponentHandler<T>, value: unknown): Constructor<T> | undefined;
 
 	/**
 	 * Unloads a file.
