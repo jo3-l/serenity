@@ -29,10 +29,19 @@ export abstract class Component {
 	public filepath!: string;
 
 	/**
+	 * Whether the component is enabled. If this is `false`, then the component
+	 * will be unloaded immediately after it is registered.
+	 *
+	 * @default true
+	 */
+	public enabled: boolean;
+
+	/**
 	 * Creates a new component.
 	 */
-	public constructor(id: string) {
+	public constructor(id: string, { enabled = false }: ComponentOptions = {}) {
 		this.id = id;
+		this.enabled = enabled;
 	}
 
 	/**
@@ -77,4 +86,17 @@ export interface Component {
 	 * being ready.
 	 */
 	init?(): unknown;
+}
+
+/**
+ * Options for a component.
+ */
+export interface ComponentOptions {
+	/**
+	 * Whether the component is enabled. If this is `false`, then the component
+	 * will be unloaded immediately after it is registered.
+	 *
+	 * @default true
+	 */
+	enabled?: boolean;
 }
