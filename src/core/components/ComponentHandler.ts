@@ -12,7 +12,7 @@ import { readdir } from 'fs/promises';
 import { join } from 'path';
 
 /**
- * Handles the loading and execution of components.
+ * Abstract class for loading and executing components.
  */
 export abstract class ComponentHandler<
 	TComponent extends Component,
