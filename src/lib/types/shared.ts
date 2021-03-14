@@ -85,3 +85,8 @@ export interface Thenable {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	catch: Function;
 }
+
+/**
+ * Returns a type with certain properties marked as optional.
+ */
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

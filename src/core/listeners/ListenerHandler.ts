@@ -2,9 +2,10 @@ import type { ComponentHandlerEventTypes, ComponentHandlerOptions } from '#core/
 import { ComponentHandler, ComponentHandlerEvents } from '#core/components/ComponentHandler';
 import { suppressEventListenersToken } from '#core/components/tokens';
 import type { SerenityClient } from '#core/SerenityClient';
+import type { MakeOptional } from '#lib/types/shared';
 import { isThenable } from '#utils/predicates';
 
-import type { Listener } from './Listener';
+import { Listener } from './Listener';
 
 import type { ClientEvents } from 'discord.js';
 import type { EventEmitter } from 'events';
@@ -25,8 +26,11 @@ export class ListenerHandler extends ComponentHandler<Listener, ListenerHandlerE
 	 * @param client - Client to use.
 	 * @param options - Options for the listener handler.
 	 */
-	public constructor(client: SerenityClient, options: ComponentHandlerOptions<Listener>) {
-		super(client, options);
+	public constructor(
+		client: SerenityClient,
+		{ classType = Listener, ...options }: MakeOptional<ComponentHandlerOptions<Listener>, 'classType'>,
+	) {
+		super(client, { classType, ...options });
 
 		this.emitters.set('client', client);
 	}
