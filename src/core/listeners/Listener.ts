@@ -3,7 +3,7 @@ import { Component } from '#core/components/Component';
 import type { SuppressEventListenersToken } from '#core/components/tokens';
 import type { Cast, MaybePromise } from '#lib/types/shared';
 
-import type { BuiltInEmitter, BuiltInEmitters } from './ListenerHandler';
+import type { BuiltInEmitter, BuiltInEmitters, ListenerHandler } from './ListenerHandler';
 
 import type { EventEmitter } from 'events';
 
@@ -11,6 +11,8 @@ import type { EventEmitter } from 'events';
  * Represents a listener.
  */
 export abstract class Listener extends Component {
+	public handler!: ListenerHandler;
+
 	/**
 	 * The emitter this listener is attached to.
 	 */
