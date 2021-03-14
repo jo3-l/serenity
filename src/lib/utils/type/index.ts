@@ -50,7 +50,7 @@ export function inspectTypeOf(
 	// If one of the following conditions hold:
 	// 1) We're at the max depth
 	// 2) The map's size is greater than the max number of elements we should iterate through
-	// 3) The mpa is empty
+	// 3) The map is empty
 	if (depth === 0 || metadata.size > maxMapLikeSize || metadata.size === 0) {
 		// Then return a default type.
 		return metadata.defaultType ?? `${metadata.typeName}<unknown, unknown>`;
