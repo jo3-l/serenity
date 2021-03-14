@@ -15,12 +15,14 @@ devDependencies:
   '@commitlint/config-angular': 12.0.1
   '@j-ulrich/release-it-regex-bumper': 1.2.1
   '@release-it/conventional-changelog': 2.0.1_release-it@14.4.1
+  '@types/benchmark': 2.1.0
   '@types/jest': 26.0.20
   '@types/js-yaml': 4.0.0
   '@types/node': 14.14.31
   '@types/pino': 6.3.6
   '@typescript-eslint/eslint-plugin': 4.16.1_4fe32a7126aebc440d3400f14be2b917
   '@typescript-eslint/parser': 4.16.1_eslint@7.21.0+typescript@4.2.2
+  benchmark: 2.1.4
   eslint: 7.21.0
   eslint-config-marine: 8.2.0
   eslint-config-prettier: 8.1.0_eslint@7.21.0
@@ -1023,6 +1025,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-kSjgDMZONiIfSH1Nxcr5JIRMwUetDki63FSQfpTCz8ogF3Ulqm8+mr5f78dUYs6vMiB6gBusQqfQmBvHZj/lwg==
+  /@types/benchmark/2.1.0:
+    dev: true
+    resolution:
+      integrity: sha512-wxT2/LZn4z0NvSfZirxmBx686CU7EXp299KHkIk79acXpQtgeYHrslFzDacPGXifC0Pe3CEaLup07bgY1PnuQw==
   /@types/cacheable-request/6.0.1:
     dependencies:
       '@types/http-cache-semantics': 4.0.0
@@ -1664,6 +1670,13 @@ packages:
     dev: true
     resolution:
       integrity: sha512-5ekuQOvO04MDj7kYZJaMab2S8SPjGJbotVNyv7QYFCOAwrGZs/YnoDNlh1U+m5hl7H2D/+n0taaAV/tfyd3KMA==
+  /benchmark/2.1.4:
+    dependencies:
+      lodash: 4.17.21
+      platform: 1.3.6
+    dev: true
+    resolution:
+      integrity: sha1-CfPeMckWQl1JjMLuVloOvzwqVik=
   /bl/4.1.0:
     dependencies:
       buffer: 5.7.1
@@ -6175,6 +6188,10 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==
+  /platform/1.3.6:
+    dev: true
+    resolution:
+      integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==
   /please-upgrade-node/3.2.0:
     dependencies:
       semver-compare: 1.0.0
@@ -8148,12 +8165,14 @@ specifiers:
   '@js-joda/timezone': ^2.5.0
   '@release-it/conventional-changelog': ^2.0.1
   '@skyra/char': ^1.0.1
+  '@types/benchmark': ^2.1.0
   '@types/jest': ^26.0.20
   '@types/js-yaml': ^4.0.0
   '@types/node': ^14.14.31
   '@types/pino': ^6.3.6
   '@typescript-eslint/eslint-plugin': ^4.16.1
   '@typescript-eslint/parser': ^4.16.1
+  benchmark: ^2.1.4
   colorette: ^1.2.2
   discord.js: ^12.5.1
   eslint: ^7.21.0

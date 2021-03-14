@@ -19,6 +19,7 @@ parserOptions:
     - scripts/tsconfig.json
     - tests/tsconfig.json
     - migrations/tsconfig.json
+    - benchmarks/tsconfig.json
     - tsconfig.knexfile.json
     - tsconfig.eslint.json
 

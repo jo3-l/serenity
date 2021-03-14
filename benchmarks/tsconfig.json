@@ -1,0 +1,19 @@
+{
+	"extends": "../tsconfig.base.json",
+	"include": [".", "../src/**/*"],
+	"compilerOptions": {
+		"noUnusedLocals": false,
+		"baseUrl": "../src",
+		"paths": {
+			"#core": ["core/index"],
+			"#core/*": ["core/*"],
+			"#database/*": ["lib/database/*"],
+			"#structures/*": ["lib/structures/*"],
+			"#utils/*": ["lib/utils/*"],
+			"#lib/*": ["lib/*"],
+			"#root/*": ["*"]
+		},
+		"plugins": [{ "transform": "typescript-transform-paths" }]
+	},
+	"references": [{ "path": "../src" }]
+}

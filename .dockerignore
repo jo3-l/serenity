@@ -36,6 +36,7 @@ tsconfig.eslint.json
 
 # Miscellaneous
 scripts
+benchmarks
 .git
 .gitattributes
 .gitignore
