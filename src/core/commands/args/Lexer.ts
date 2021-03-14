@@ -67,7 +67,7 @@ export class Lexer implements IterableIterator<Token> {
 		const char = this.input[this.position];
 		const isMaybeQuoted =
 			this.quotes.size && // Has quotes registered
-			this.position !== this.input.length - 1 && // Not the last character
+			!this.isLastCharacter && // Not the last character
 			this.quotes.has(char); // Current character is an open quote.
 
 		if (isMaybeQuoted) {
@@ -76,44 +76,31 @@ export class Lexer implements IterableIterator<Token> {
 
 			// Skip past the open quote.
 			this.advance(1);
-			const result = this.consumeWhile((c) => c !== closeQuote, true);
 
-			if (result) {
-				const closeQuote = this.input[this.position];
-				// Skip past the close quote.
-				this.advance(1);
-				const trailing = this.consumeWhile((c) => isWhiteSpace(getCode(c))).value;
-				const token = { raw: char + result.raw + closeQuote, value: result.value, trailing };
-				return { done: false, value: token };
-			}
+			const token = this.nextQuoted(char, closeQuote);
+			if (token) return { done: false, value: token };
 
 			// Backtrack to the start position, as we were unable to match a
 			// quoted string.
 			this.position = startPosition;
 		}
 
-		const result = this.consumeWhile((c) => !isWhiteSpace(getCode(c)));
-		const trailing = this.consumeWhile((c) => isWhiteSpace(getCode(c))).value;
-		const token = { ...result, trailing: trailing };
-		return { done: false, value: token };
+		return { done: false, value: this.nextWord() };
 	}
 
-	private consumeWhile(
-		f: (char: string) => boolean,
-		returnUndefinedOnEof: true,
-	): { raw: string; value: string } | undefined;
-	private consumeWhile(f: (char: string) => boolean, returnUndefinedOnEof?: false): { raw: string; value: string };
-	private consumeWhile(f: (char: string) => boolean, returnUndefinedOnEof = false) {
+	private nextQuoted(openQuote: string, closeQuote: string) {
 		let raw = '';
 		let value = '';
 		while (!this.done) {
 			const char = this.input[this.position];
-			const ok = f(char);
+			if (char === closeQuote) {
+				// Skip past the close quote.
+				this.advance(1);
+				const trailing = this.consumingLeadingWhiteSpace();
+				return { value, raw: openQuote + raw + closeQuote, trailing };
+			}
 
-			if (!ok) return { raw, value };
-
-			const hasNext = this.position + 1 < this.input.length;
-			if (char === '\\' && hasNext) {
+			if (char === '\\' && !this.isLastCharacter) {
 				const nextChar = this.input[this.position + 1];
 
 				// '\c' -> 'c' for any character 'c'.
@@ -129,12 +116,57 @@ export class Lexer implements IterableIterator<Token> {
 			this.advance(1);
 		}
 
-		if (returnUndefinedOnEof) return undefined;
-		return { raw, value };
+		return undefined;
+	}
+
+	private nextWord() {
+		let raw = '';
+		let value = '';
+		while (!this.done) {
+			const char = this.input[this.position];
+			if (isWhiteSpace(getCode(char))) {
+				const trailing = this.consumingLeadingWhiteSpace();
+				return { value, raw, trailing };
+			}
+
+			if (char === '\\' && !this.isLastCharacter) {
+				const nextChar = this.input[this.position + 1];
+
+				// '\c' -> 'c' for any character 'c'.
+				value += nextChar;
+				raw += `\\${nextChar}`;
+
+				this.advance(2);
+				continue;
+			}
+
+			value += char;
+			raw += char;
+			this.advance(1);
+		}
+
+		return { value, raw, trailing: '' };
+	}
+
+	private consumingLeadingWhiteSpace() {
+		let result = '';
+		while (!this.done) {
+			const char = this.input[this.position];
+			if (!isWhiteSpace(getCode(char))) return result;
+
+			result += char;
+			this.advance(1);
+		}
+
+		return result;
 	}
 
 	private advance(n: number) {
 		this.position += n;
+	}
+
+	private get isLastCharacter() {
+		return this.position === this.input.length - 1;
 	}
 }
 
