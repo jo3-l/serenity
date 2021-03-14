@@ -8,7 +8,7 @@ export interface None {
 }
 
 /**
- * An instance of a None.
+ * An empty value.
  */
 export const none: None = { exists: false };
 
@@ -54,13 +54,14 @@ export interface Ok<T> {
  * @param value - Value of the computation.
  * @returns The resulting Ok.
  */
-export function ok(value: ImpossibleType): never;
+export function ok(): Ok<undefined>;
+export function ok(value: ImpossibleType): Ok<never>;
 export function ok<T extends InferLiteral[]>(value: [...T]): Ok<[...T]>;
 export function ok<V extends InferLiteral, K extends PropertyKey, R extends { [S in K]: V }>(value: R): Ok<R>;
 export function ok<T extends InferLiteral>(value: T): Ok<T>;
 export function ok<T>(value: T): Ok<T>;
-export function ok<T>(value: T): Ok<T> {
-	return { ok: true, value };
+export function ok<T>(value?: T): Ok<T> {
+	return { ok: true, value: value as any };
 }
 
 /**
@@ -77,13 +78,14 @@ export interface Err<E> {
  * @param error - Error value to use.
  * @returns The resulting Err.
  */
-export function err(error: ImpossibleType): never;
+export function err(): Err<undefined>;
+export function err(error: ImpossibleType): Err<never>;
 export function err<E extends InferLiteral[]>(error: [...E]): Err<[...E]>;
 export function err<V extends InferLiteral, K extends PropertyKey, E extends { [S in K]: V }>(error: E): Err<E>;
 export function err<E extends InferLiteral>(error: E): Err<E>;
 export function err<E>(error: E): Err<E>;
-export function err<E>(error: E): Err<E> {
-	return { ok: false, error };
+export function err<E>(error?: E): Err<E> {
+	return { ok: false, error: error as any };
 }
 
 /**

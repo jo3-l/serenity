@@ -19,6 +19,13 @@ describe('result monad', () => {
 				value: 1,
 			});
 		});
+
+		it('should create an Ok with a value of undefined if no value is given', () => {
+			expect(ok()).toStrictEqual({
+				ok: true,
+				value: undefined,
+			});
+		});
 	});
 
 	describe('err()', () => {
@@ -26,6 +33,13 @@ describe('result monad', () => {
 			expect(err(1)).toStrictEqual({
 				ok: false,
 				error: 1,
+			});
+		});
+
+		it('should create an Err with a value of undefined if no value is given', () => {
+			expect(err()).toStrictEqual({
+				ok: false,
+				error: undefined,
 			});
 		});
 	});
