@@ -52,10 +52,10 @@ function generateVariadicFlagParserInput() {
 }
 
 benchmarks((suite) => {
-	suite('lexing: lex string with double quotes', (add) => {
+	suite('lexing: lex string with double quotes and escaped characters', (add) => {
 		let str = '';
 		for (let i = 0; i < 2000; i++) {
-			if (i % 23 === 0) str += 'v';
+			if (i % 23 === 0) str += '\\';
 			else if (i % 11 === 0) str += '"';
 			else if (i % 5 === 0) str += ' ';
 			else str += 'h';
