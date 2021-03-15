@@ -1,6 +1,7 @@
 node_modules
 dist
 coverage
-# Migration files with a '.js' extension are transpiled.
+
+benchmarks/*.js
 migrations/*.js
 knexfile.js

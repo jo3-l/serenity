@@ -8,7 +8,7 @@ node_modules
 
 # Build artifacts
 dist
-# Migration files with a '.js' extension are transpiled.
+benchmarks/*.js
 migrations/*.js
 knexfile.js
 
