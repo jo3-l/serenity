@@ -1,13 +1,6 @@
-import { POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_USER } from './src/lib/setup/config';
+import { POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_USER } from '#lib/setup/config';
 
-import type { Knex } from 'knex/types';
-import { extname } from 'path';
-
-// If the Knex configuration file used had a `.js` extension, then that implies
-// we've likely transpiled the migration files to JavaScript as well, so attempt
-// to run JavaScript migration files. Otherwise, default to running TypeScript
-// migration files with `ts-node`.
-const migrationsExt = extname(__dirname) === 'js' ? '.js' : '.ts';
+import type { Knex } from 'knex';
 
 const config: Knex.Config = {
 	client: 'postgresql',
@@ -23,7 +16,7 @@ const config: Knex.Config = {
 		stub: 'migrations/migration.stub',
 		extension: 'ts',
 		directory: 'migrations',
-		loadExtensions: [migrationsExt],
+		loadExtensions: ['.js'],
 	},
 };
 

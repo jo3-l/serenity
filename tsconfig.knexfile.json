@@ -1,5 +1,18 @@
 {
 	"extends": "./tsconfig.base.json",
 	"include": ["./knexfile.ts"],
+	"compilerOptions": {
+		"baseUrl": "./dist",
+		"paths": {
+			"#core": ["core/index"],
+			"#core/*": ["core/*"],
+			"#database/*": ["lib/database/*"],
+			"#structures/*": ["lib/structures/*"],
+			"#utils/*": ["lib/utils/*"],
+			"#lib/*": ["lib/*"],
+			"#root/*": ["*"]
+		},
+		"plugins": [{ "transform": "typescript-transform-paths" }]
+	},
 	"references": [{ "path": "./src" }]
 }
