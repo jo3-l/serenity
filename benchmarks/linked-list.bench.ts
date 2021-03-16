@@ -3,7 +3,7 @@ import { LinkedList } from '#utils/collections/LinkedList';
 import { benchmarks } from './wrapper';
 
 benchmarks((suite) => {
-	/* suite('add to list', (add) => {
+	suite('add to list', (add) => {
 		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
 			(times) => `unshift linked list ${times}x`,
 			(times) => {
@@ -19,7 +19,7 @@ benchmarks((suite) => {
 				for (let i = 0; i < times; i++) array.push(i);
 			},
 		);
-	}); */
+	});
 
 	suite('remove element at middle', (add) => {
 		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
