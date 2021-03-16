@@ -4,21 +4,9 @@
  *
  * Copyright (c) 2020 1Computer1, MIT License.
  */
-import type { MaybePromise } from '#lib/types/shared';
-
 import type { Event } from 'benchmark';
 import { Suite } from 'benchmark';
 import { bold, green, yellow } from 'colorette';
-
-const hzFormatter = new Intl.NumberFormat(undefined, {
-	maximumFractionDigits: 2,
-	minimumFractionDigits: 2,
-});
-
-const arithmeticMeanFormatter = new Intl.NumberFormat(undefined, {
-	maximumFractionDigits: 16,
-	minimumFractionDigits: 16,
-});
 
 /**
  * A utility for creating and running benchmark suites.
@@ -26,25 +14,25 @@ const arithmeticMeanFormatter = new Intl.NumberFormat(undefined, {
  * @example
  * ```typescript
  * benchmarks((suite) => {
- *  suite('copy array', (add) => {
- *      const array = [...new Array(1000).keys()].sort(Math.random);
+ * 	suite('copy array', (add) => {
+ * 		add('Array#slice()', () => {
+ * 			const array = [...new Array(1000).keys()];
+ * 			return () => array.slice();
+ * 		});
  *
- *      add('Array#slice', () => {
- *          const copy = array.slice();
- *      });
- *
- *      add('spread operator', () => {
- *          const copy = [...array];
- *      });
- *  });
+ * 		add('spread operator', () => {
+ * 			const array = [...new Array(1000).keys()];
+ * 			return () => [...array];
+ * 		})
+ * 	})
  * });
  * ```
  *
  * @param fn - A function that takes one argument, the benchmark suite adder.
  */
-export function benchmarks(fn: Consumer<BenchmarkSuiteAdder>) {
+export function benchmarks(callback: (suite: SuiteAddFunction) => void) {
 	const suites: [name: string, suite: Suite][] = [];
-	fn((name, fn) => {
+	callback((name, fn) => {
 		suites.push([name, makeSuite(fn)]);
 	});
 
@@ -57,32 +45,121 @@ export function benchmarks(fn: Consumer<BenchmarkSuiteAdder>) {
 	console.log('Benchmarks completed.');
 }
 
-function makeSuite(fn: Consumer<TestCaseAdder>) {
-	let testCaseCount = 0;
+function makeSuite(fn: (add: TestCaseAddFunction) => void) {
+	let n = 0;
 	const suite = new Suite()
 		.on('cycle', ({ target }: Event) => {
 			const stats = target.stats!;
 
-			const hz = green(hzFormatter.format(target.hz!));
+			const hz = green(target.hz!.toLocaleString(undefined, { maximumFractionDigits: 2 }));
 			const rme = stats.rme.toFixed(2);
-			const arithmeticMean = yellow(arithmeticMeanFormatter.format(stats.mean));
+			const mean = yellow(stats.mean.toLocaleString(undefined, { maximumFractionDigits: 16 }));
 
-			console.log(`  -> x${hz} ops/sec ±${rme}% ${arithmeticMean} secs/op    ${green(target.name!)}`);
+			console.log(`  -> x${hz} ops/sec ±${rme}% ${mean} secs/op    ${green(target.name!)}`);
 		})
 		.on('complete', function complete(this: Suite) {
-			if (testCaseCount <= 1) return;
+			if (n <= 1) return;
 			const [name] = this.filter('fastest').map('name');
 			console.log(`  -> Fastest is ${bold(name)}`);
 		});
 
-	fn((name, fn) => {
-		++testCaseCount;
-		suite.add(name, fn);
-	});
+	const addFunction: TestCaseAddFunction = (name, fn) => {
+		const result = fn();
+		const resolvedFn = typeof result === 'function' ? result : fn;
+
+		suite.add(name, resolvedFn);
+		++n;
+	};
+
+	addFunction.each = <T extends readonly [] | readonly V[], V extends readonly [] | readonly unknown[]>(data: T) => {
+		return (nameGenerator, fn) => {
+			for (const values of data) {
+				const name = nameGenerator(...(values as any));
+				addFunction(name, () => fn(...(values as any)));
+			}
+		};
+	};
+
+	fn(addFunction);
 
 	return suite;
 }
 
-type BenchmarkSuiteAdder = (name: string, callback: Consumer<TestCaseAdder>) => void;
-type TestCaseAdder = (name: string, fn: () => MaybePromise<void>) => void;
-type Consumer<T> = (value: T) => void;
+/**
+ * Registers a benchmark suite.
+ */
+export type SuiteAddFunction = (name: string, callback: (add: TestCaseAddFunction) => void) => void;
+
+/**
+ * Represents a test case to benchmark.
+ */
+export type TestCase = () => void | (() => void);
+
+/**
+ * Registers a test case to benchmark.
+ */
+export interface TestCaseAddFunction {
+	/**
+	 * Adds a test case to benchmark.
+	 *
+	 * @example
+	 * ```typescript
+	 * add('array pop', () => {
+	 * 	// Generate the input in the callback...
+	 * 	const array = [...new Array(1000).keys()];
+	 *
+	 * 	// And return another function that runs the code to be benchmarked.
+	 * 	return () => array.pop();
+	 * });
+	 * ```
+	 *
+	 * @example
+	 * ```typescript
+	 * add('add numbers', () => {
+	 * 	// If there is no setup needed, run the code to be benchmarked directly in the function.
+	 * 	const result = 1 + 1;
+	 * })
+	 * ```
+	 *
+	 * @param name - Name of the test case.
+	 * @param fn - Test case itself. If additional setup is needed, run the
+	 * setup in the function and then return another function that runs the code
+	 * to be benchmarked.
+	 */
+	(name: string, fn: TestCase): void;
+
+	/**
+	 * Generates and adds test cases.
+	 *
+	 * @example
+	 * ```typescript
+	 * add.each([
+	 * 	[20],
+	 * 	[50],
+	 * 	[100],
+	 * ])((size) => `new Array(${size})`, (size) => {
+	 * 	const generated = new Array(size);
+	 * });
+	 *
+	 * // Same as:
+	 * add('new Array(20)', () => {
+	 * 	const generated = new Array(20);
+	 * });
+	 *
+	 * add('new Array(50)', () => {
+	 * 	const generated = new Array(50);
+	 * });
+	 * // etc...
+	 * ```
+	 *
+	 * @param data - A 2D array with the arguments that are passed into the test
+	 * case `fn` for each row.
+	 * @returns A function that has two parameters - 1) the name generator,
+	 * which generates the name for the case based off the row of values, and 2)
+	 * the test case function, which returns the code to be benchmarked based
+	 * off the row of values.
+	 */
+	each<T extends readonly [] | readonly V[], V extends readonly [] | readonly unknown[]>(
+		data: T,
+	): (nameGenerator: (...args: T[number]) => string, fn: (...args: T[number]) => ReturnType<TestCase>) => void;
+}

@@ -3,67 +3,108 @@ import { LinkedList } from '#utils/collections/LinkedList';
 import { benchmarks } from './wrapper';
 
 benchmarks((suite) => {
-	suite('add to list', (add) => {
-		add('LinkedList#unshift() 1000x', () => {
-			const linkedList = new LinkedList<number>();
-			for (let i = 0; i < 1000; i++) linkedList.unshift(i);
-		});
+	/* suite('add to list', (add) => {
+		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
+			(times) => `unshift linked list ${times}x`,
+			(times) => {
+				const linkedList = new LinkedList<number>();
+				for (let i = 0; i < times; i++) linkedList.unshift(i);
+			},
+		);
 
-		add('Array#push() 1000x', () => {
-			const array: number[] = [];
-			for (let i = 0; i < 1000; i++) array.push(i);
-		});
-	});
+		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
+			(times) => `array push ${times}x`,
+			(times) => {
+				const array: number[] = [];
+				for (let i = 0; i < times; i++) array.push(i);
+			},
+		);
+	}); */
 
 	suite('remove element at middle', (add) => {
-		const linkedList = new LinkedList<number>();
-		for (let i = 999; i >= 0; i--) linkedList.unshift(i);
+		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
+			(length) => `find & remove element in linked list w/ ${length} length`,
+			(length) => {
+				const needle = Math.floor(length / 2);
 
-		const array = [...new Array(1000).keys()];
+				const linkedList = new LinkedList<number>();
+				for (let i = length - 1; i >= 0; i--) linkedList.unshift(i);
+				const iter = linkedList.iter();
 
-		add('LinkedListIterator#remove() at index 499/999', () => {
-			const iter = linkedList.iter();
-			for (const element of iter) {
-				if (element === 499) {
-					iter.remove();
-					break;
-				}
-			}
-		});
+				return () => {
+					for (const element of iter) {
+						if (element === needle) {
+							iter.remove();
+							iter.insert(needle);
+							break;
+						}
+					}
+				};
+			},
+		);
 
-		add('Array#splice() at index 499/999', () => {
-			for (const element of array) {
-				if (element === 499) {
-					array.splice(499, 1);
-					break;
-				}
-			}
-		});
+		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
+			(length) => `find & splice in array w/ ${length} length`,
+			(length) => {
+				const needle = Math.floor(length / 2);
+				const array = [...new Array(length).keys()];
+
+				return () => {
+					// Yes, this can be done directly (without the loop) but we're
+					// intentionally measuring it with the loop taken into account
+					// because that's how we're going to be using this in the app.
+					for (const element of array) {
+						if (element === needle) {
+							array.splice(needle, 1);
+							array.push(needle);
+							break;
+						}
+					}
+				};
+			},
+		);
 	});
 
 	suite('add element at middle', (add) => {
-		const linkedList = new LinkedList<number>();
-		for (let i = 999; i >= 0; i--) linkedList.unshift(i);
+		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
+			(length) => `find & insert element in linked list w/ ${length} length`,
+			(length) => {
+				const needle = Math.floor(length / 2);
 
-		const array = [...new Array(1000).keys()];
+				const linkedList = new LinkedList<number>();
+				for (let i = length - 1; i >= 0; i--) linkedList.unshift(i);
+				const iter = linkedList.iter();
 
-		add('LinkedListIterator#insert() at index 499/999', () => {
-			const iter = linkedList.iter();
-			for (const element of iter) {
-				if (element === 499) {
-					iter.insert(123);
-					break;
-				}
-			}
-		});
+				return () => {
+					for (const element of iter) {
+						if (element === needle) {
+							iter.insert(123);
+							iter.remove();
+							break;
+						}
+					}
+				};
+			},
+		);
 
-		add('Array#splice() at index 499/999', () => {
-			for (let i = 0; i < array.length; i++) {
-				if (array[i] === 499) {
-					array.splice(i, 0, 123);
-					break;
-				}
-			}
-		});
+		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
+			(length) => `find & insert element in array w/ ${length} length`,
+			(length) => {
+				const needle = Math.floor(length / 2);
+				const array = [...new Array(length).keys()];
+
+				// See comment above: we intentionally take the loop into account
+				// even though it is unnecessary in this specific case.
+				return () => {
+					for (const element of array) {
+						if (element === needle) {
+							array.splice(needle, 0, 123);
+							array.pop();
+							break;
+						}
+					}
+				};
+			},
+		);
 	});
 });
