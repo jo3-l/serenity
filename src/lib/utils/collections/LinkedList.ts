@@ -47,7 +47,6 @@ export class LinkedListIterator<T> implements IterableIterator<T> {
 		// If the current node is invalid, then `currentNode` is actually the
 		// next node.
 		if (!this.canOperateOnCurrentElement) {
-			// If the list was empty, throw an error.
 			if (!this.currentNode) return { done: true, value: undefined };
 			this.canOperateOnCurrentElement = true;
 			return { done: false, value: this.currentNode.value };
@@ -65,11 +64,10 @@ export class LinkedListIterator<T> implements IterableIterator<T> {
 	/**
 	 * Removes the current element from the linked list.
 	 *
-	 * @throws If there is no current element to operate on (this occurs if
-	 * `next` was never called before).
+	 * @throws If there is no current element to operate on (for example, this
+	 * occurs if `next` was never called before).
 	 * @remarks
-	 * This does not change the result of the next call to `next()`. However,
-	 * the return value of `nextIndex()` will change.
+	 * This will not change the result of the next call to `next()`.
 	 */
 	public remove() {
 		if (!this.canOperateOnCurrentElement) {
@@ -132,8 +130,7 @@ export class LinkedListIterator<T> implements IterableIterator<T> {
  */
 export class LinkedList<T> implements Iterable<Node<T>> {
 	/**
-	 * The first element of this linked list, or `undefined` if it does not
-	 * exist.
+	 * The first node of this linked list, or `undefined` if it does not exist.
 	 */
 	public head?: Node<T>;
 
@@ -154,7 +151,7 @@ export class LinkedList<T> implements Iterable<Node<T>> {
 	 * @returns The removed node.
 	 */
 	public shift() {
-		if (!this.head) throw new Error('Tried to call removeFirst() when there was no head node.');
+		if (!this.head) throw new Error('Tried to call shift() when there was no head node.');
 		const headNode = this.head;
 		this.head = headNode.next;
 		return headNode;
