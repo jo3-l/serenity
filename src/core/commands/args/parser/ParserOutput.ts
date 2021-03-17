@@ -23,4 +23,6 @@ export interface ParserOutput {
 /**
  * Creates an empty parser output.
  */
-export const emptyOutput = (): ParserOutput => ({ ordered: [], flags: new Set(), options: new Map() });
+export function emptyOutput(): ParserOutput {
+	return { ordered: [], flags: new Set(), options: new Map() };
+}
