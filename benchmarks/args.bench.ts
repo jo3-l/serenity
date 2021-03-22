@@ -7,9 +7,8 @@ import { benchmarks } from './wrapper';
 
 benchmarks((suite) => {
 	suite('lex string with double quotes and escaped characters', (add) => {
-		add.each([[20], [100], [250], [500], [1000], [2000]])(
-			(length) => `lex string with ${length} length using Lexer`,
-			(length) => {
+		for (const length of [20, 100, 250, 500, 1000, 2000]) {
+			add(`lex string with ${length} length using Lexer`, () => {
 				let str = '';
 				for (let i = 0; i < length; i++) {
 					if (i % 11 === 0) str += '"';
@@ -20,14 +19,13 @@ benchmarks((suite) => {
 				const lexer = new Lexer().setQuotes([['"', '"']]).setInput(str);
 
 				return () => void lexer.lex();
-			},
-		);
+			});
+		}
 	});
 
 	suite('parse tokens with options, flags and ordered arguments', (add) => {
-		add.each([[5], [10], [20], [100], [250], [500]])(
-			(length) => `parse ${length} tokens using StandardParser`,
-			(length) => {
+		for (const length of [5, 10, 20, 100, 250, 500]) {
+			add(`parse ${length} tokens using StandardParser`, () => {
 				const input: Token[] = [];
 				let i = 0;
 				while (i < length) {
@@ -51,12 +49,9 @@ benchmarks((suite) => {
 					.setInput(input);
 
 				return () => void parser.parse();
-			},
-		);
+			});
 
-		add.each([[5], [10], [20], [100], [250], [500]])(
-			(length) => `parse ${length} tokens using VariadicFlagParser`,
-			(length) => {
+			add(`parse ${length} tokens using VariadicFlagParser`, () => {
 				const input: Token[] = [];
 				let i = 0;
 				while (i < length) {
@@ -82,7 +77,7 @@ benchmarks((suite) => {
 					.setInput(input);
 
 				return () => void parser.parse();
-			},
-		);
+			});
+		}
 	});
 });
