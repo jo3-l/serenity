@@ -104,8 +104,8 @@ export class TextPreprocessor {
 		if (LOWERCASE_A <= char && char <= LOWERCASE_Z) return this.outputWriter.writeAlphaCharacter(char, index);
 
 		// Check for leet-speak characters.
-		const normalizedChar = this.leetSpeakDictionary.get(char);
-		if (normalizedChar) return this.outputWriter.writeAlphaCharacter(normalizedChar, index);
+		const leetSpeakChar = this.leetSpeakDictionary.get(char);
+		if (leetSpeakChar) return this.outputWriter.writeAlphaCharacter(leetSpeakChar, index);
 
 		// All other characters are interpreted as separator characters.
 		this.outputWriter.writeSeparator();
@@ -117,7 +117,7 @@ export class TextPreprocessor {
 		if (UPPERCASE_A <= char && char <= UPPERCASE_Z) char ^= 0x20;
 		if (LOWERCASE_A <= char && char <= LOWERCASE_Z) return this.outputWriter.writeAlphaCharacter(char, index);
 
-		// Check if the character is a confusable character.
+		// Check for confusable characters.
 		const singleCharacterConfusable = this.singleCharacterConfusables.get(char);
 		if (singleCharacterConfusable) return this.outputWriter.writeAlphaCharacter(singleCharacterConfusable, index);
 
@@ -127,6 +127,12 @@ export class TextPreprocessor {
 			return;
 		}
 
+		// Check for leet-speak characters.
+		const leetSpeakChar = this.leetSpeakDictionary.get(char);
+		if (leetSpeakChar) return this.outputWriter.writeAlphaCharacter(leetSpeakChar, index);
+
+		// Otherwise, get the Unicode category that this character falls into
+		// and either do nothing or write a separator character.
 		const category = getUnicodeCategory(char);
 		switch (category) {
 			case UnicodeCategory.Control:
@@ -134,7 +140,7 @@ export class TextPreprocessor {
 			case UnicodeCategory.SpacingCombiningMark:
 			case UnicodeCategory.EnclosingMark:
 			case UnicodeCategory.NonSpacingMark:
-				// Simply ignore characters of this type.
+				// Completely ignore characters in these categories.
 				return;
 			default:
 				this.outputWriter.writeSeparator();
