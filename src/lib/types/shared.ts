@@ -53,7 +53,6 @@ type UniqueSymbol = typeof v;
  */
 export type ImpossibleType = [[134596 & { [v]: 45677 }, UniqueSymbol, Record<UniqueSymbol, [[never] & { [v]: void }]>]];
 
-
 /**
  * A utility type that resolves to the constructor type of the class instance
  * type provided.
@@ -87,6 +86,35 @@ export interface Thenable {
 }
 
 /**
- * Returns a type with certain properties marked as optional.
+ * Marks the property `K` of object `T` as optional.
  */
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/**
+ * Makes `T` deep readonly.
+ */
+export type DeepReadonly<T> = T extends any[]
+	? DeepReadonlyArray<T[number]>
+	: // eslint-disable-next-line @typescript-eslint/ban-types
+	T extends object
+	? DeepReadonlyObject<T>
+	: T;
+
+/**
+ * Makes an array of deep readonly values.
+ */
+export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
+
+/**
+ * Marks all the properties of object `T` deep readonly.
+ */
+export type DeepReadonlyObject<T> = {
+	readonly [P in NonFunctionPropertyNames<T>]: DeepReadonly<T[P]>;
+};
+
+/**
+ * Computes all property names of object `T` that are not functions.
+ */
+export type NonFunctionPropertyNames<T> = {
+	[K in keyof T]: T[K] extends (...args: any[]) => unknown ? never : K;
+}[keyof T];
