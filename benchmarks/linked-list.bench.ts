@@ -4,27 +4,22 @@ import { benchmarks } from './wrapper';
 
 benchmarks((suite) => {
 	suite('add to list', (add) => {
-		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
-			(times) => `unshift linked list ${times}x`,
-			(times) => {
+		for (const times of [5, 10, 20, 50, 100, 250, 1000]) {
+			add(`unshift linked list ${times}x`, () => {
 				const linkedList = new LinkedList<number>();
 				for (let i = 0; i < times; i++) linkedList.unshift(i);
-			},
-		);
+			});
 
-		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
-			(times) => `array push ${times}x`,
-			(times) => {
+			add(`array push ${times}x`, () => {
 				const array: number[] = [];
 				for (let i = 0; i < times; i++) array.push(i);
-			},
-		);
+			});
+		}
 	});
 
 	suite('remove element at middle', (add) => {
-		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
-			(length) => `find & remove element in linked list w/ ${length} length`,
-			(length) => {
+		for (const length of [5, 10, 20, 50, 100, 250, 500, 1000]) {
+			add(`find & remove element in linked list w/ ${length} length`, () => {
 				const needle = Math.floor(length / 2);
 
 				const linkedList = new LinkedList<number>();
@@ -40,12 +35,9 @@ benchmarks((suite) => {
 						}
 					}
 				};
-			},
-		);
+			});
 
-		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
-			(length) => `find & splice in array w/ ${length} length`,
-			(length) => {
+			add(`find & splice in array w/ ${length} length`, () => {
 				const needle = Math.floor(length / 2);
 				const array = [...new Array(length).keys()];
 
@@ -61,14 +53,13 @@ benchmarks((suite) => {
 						}
 					}
 				};
-			},
-		);
+			});
+		}
 	});
 
 	suite('add element at middle', (add) => {
-		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
-			(length) => `find & insert element in linked list w/ ${length} length`,
-			(length) => {
+		for (const length of [5, 10, 20, 50, 100, 250, 500, 1000]) {
+			add(`find & insert element in linked list w/ ${length} length`, () => {
 				const needle = Math.floor(length / 2);
 
 				const linkedList = new LinkedList<number>();
@@ -84,12 +75,9 @@ benchmarks((suite) => {
 						}
 					}
 				};
-			},
-		);
+			});
 
-		add.each([[5], [10], [20], [50], [100], [250], [500], [1000]])(
-			(length) => `find & insert element in array w/ ${length} length`,
-			(length) => {
+			add(`find & insert element in array w/ ${length} length`, () => {
 				const needle = Math.floor(length / 2);
 				const array = [...new Array(length).keys()];
 
@@ -104,7 +92,7 @@ benchmarks((suite) => {
 						}
 					}
 				};
-			},
-		);
+			});
+		}
 	});
 });

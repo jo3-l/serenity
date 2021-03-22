@@ -1,4 +1,5 @@
-import { CharacterIterator } from '../src/lib/moderation/filter/CharacterIterator';
+import { CharacterIterator } from '#lib/moderation/filter/preprocessor/CharacterIterator';
+
 import { benchmarks } from './wrapper';
 
 import { isHighSurrogate, isLowSurrogate } from '@skyra/char';
@@ -29,9 +30,8 @@ function toCodePoints(text: string) {
 
 benchmarks((suite) => {
 	suite('iterate over string', (add) => {
-		add.each([[5], [10], [50], [250], [500], [2000]])(
-			(length) => `iterate over ascii string of ${length} length using for-loop and charCodeAt`,
-			(length) => {
+		for (const length of [5, 10, 50, 250, 500, 2000]) {
+			add(`iterate over ascii string of ${length} length using for-loop and charCodeAt`, () => {
 				const str = 'b'.repeat(length);
 				return () => {
 					let v = 0;
@@ -42,28 +42,22 @@ benchmarks((suite) => {
 						++v;
 					}
 				};
-			},
-		);
+			});
 
-		add.each([[5], [10], [50], [250], [500], [2000]])(
-			(length) => `iterate over string of ${length} length using CharacterIterator (for-of loop)`,
-			(length) => {
+			add(`iterate over string of ${length} length using CharacterIterator (for-of loop)`, () => {
 				const str = '𝌆'.repeat(length);
 				return () => {
-					const iterator = new CharacterIterator().setInput(str);
+					const iterator = new CharacterIterator().setText(str);
 					let i = 0;
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					for (const value of iterator) ++i;
 				};
-			},
-		);
+			});
 
-		add.each([[5], [10], [50], [250], [500], [2000]])(
-			(length) => `iterate over string of ${length} length using CharacterIterator (while-loop)`,
-			(length) => {
+			add(`iterate over string of ${length} length using CharacterIterator (while-loop)`, () => {
 				const str = '𝌆'.repeat(length);
 				return () => {
-					const iterator = new CharacterIterator().setInput(str);
+					const iterator = new CharacterIterator().setText(str);
 					let i = 0;
 					let v = iterator.next();
 					while (!v.done) {
@@ -72,12 +66,9 @@ benchmarks((suite) => {
 						v = iterator.next();
 					}
 				};
-			},
-		);
+			});
 
-		add.each([[5], [10], [50], [250], [500], [2000]])(
-			(length) => `iterate over string of ${length} length using array`,
-			(length) => {
+			add(`iterate over string of ${length} length using array`, () => {
 				const str = '𝌆'.repeat(length);
 				return () => {
 					const codePoints = toCodePoints(str);
@@ -85,12 +76,9 @@ benchmarks((suite) => {
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					for (const value of codePoints) ++i;
 				};
-			},
-		);
+			});
 
-		add.each([[5], [10], [50], [250], [500], [2000]])(
-			(length) => `iterate over string of ${length} length using codePointAt & check for undefined`,
-			(length) => {
+			add(`iterate over string of ${length} length using codePointAt & check for undefined`, () => {
 				const str = '𝌆'.repeat(length);
 				return () => {
 					let v = 0;
@@ -99,7 +87,7 @@ benchmarks((suite) => {
 						++v;
 					}
 				};
-			},
-		);
+			});
+		}
 	});
 });
