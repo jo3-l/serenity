@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:16-alpine
 LABEL name="Serenity Bot"
 LABEL version="0.0.1"
 LABEL maintainer="Joe L. <https://github.com/jo3-l>"
